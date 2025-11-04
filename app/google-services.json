@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1076119988683",
+    "project_id": "pinpoint-72647",
+    "storage_bucket": "pinpoint-72647.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076119988683:android:bd2d6302eb4575c7d86e4e",
+        "android_client_info": {
+          "package_name": "com.cs407.pinpoint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLrPwyuE9wIISSTA6rar1haKj3OZ-Gpyw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
