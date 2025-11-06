@@ -1,10 +1,13 @@
 package com.cs407.pinpoint.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,8 +90,8 @@ fun ItemPage(
 fun ImageCard(
     /* Dynamic name and img URL to make it reusable*/
     modifier: Modifier = Modifier,
-    imageRes: Int = R.drawable.ic_launcher_background,
-    contentDescription: String = "Item image"
+    imageRes: Int = R.drawable.ic_launcher_foreground,
+    contentDescription: String = "Dynamic Item Name"
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -114,11 +119,33 @@ fun ImageCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(0.dp, 16.dp)
+                        .padding(16.dp, 16.dp)
+                        .size(500.dp, 300.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.Black,
+                            shape = MaterialTheme.shapes.medium // border radius
+                        )
                 )
                 Spacer(Modifier.width(16.dp))
-                Text("UserName : .......")
-                Text("Contact Information: ")
+            }
+            Column(
+                modifier = Modifier
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start
+            ){
+                Row(){
+                    Icon(Icons.Default.Phone, contentDescription = "Phone Icon")
+                    Text("Contact Information: (Phone or Email)", fontSize = 16.sp, modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp))
+                }
+                Row(){
+                    Icon(Icons.Default.AccountBox, contentDescription ="User Name")
+                    Text("UserName : default_user", fontSize = 16.sp, modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp))
+                }
+                /* TODO : Add a map API here...
+                    where the img was taken and put a pin there */ // Idk how to do that rn
+                Spacer(Modifier.padding(64.dp))//Holder for the map
+                Text("MAP GOES HERE")
             }
         }
     }
