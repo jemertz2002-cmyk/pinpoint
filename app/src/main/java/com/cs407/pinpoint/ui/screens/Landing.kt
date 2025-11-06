@@ -37,7 +37,7 @@ fun LandingPage(
     ) {
 
         Column(
-            modifier = Modifier.padding(top = 64.dp)
+            modifier = Modifier.padding(top = 96.dp)
         ) {
             Text(
                 text = "PinPoint",
@@ -53,7 +53,7 @@ fun LandingPage(
             )
         }
 
-        Spacer(Modifier.height(256.dp))
+        Spacer(Modifier.height(200.dp))
 
         Column(
             modifier = Modifier.padding(bottom = 192.dp)
@@ -61,9 +61,9 @@ fun LandingPage(
             Button(
                 onClick = onSignUp,
                 colors = ButtonDefaults.buttonColors(containerColor = mint),
-                modifier = Modifier.fillMaxWidth(0.7f)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Sign Up", color = Color.Black, fontSize = 24.sp,)
+                Text("Sign Up", color = Color.Black, fontSize = 20.sp,)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -71,9 +71,9 @@ fun LandingPage(
             Button(
                 onClick = onLogin,
                 colors = ButtonDefaults.buttonColors(containerColor = mint),
-                modifier = Modifier.fillMaxWidth(0.7f)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Login", color = Color.Black, fontSize = 24.sp,)
+                Text("Login", color = Color.Black, fontSize = 20.sp,)
             }
         }
     }
