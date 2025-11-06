@@ -20,10 +20,13 @@ fun PinPointApp(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "item_page",
+        startDestination = "landing",
     ) {
         composable("landing") {
-            LandingPage()
+            LandingPage(
+                onLogin = { navController.navigate("login") },
+                onSignUp = { navController.navigate("signup") }
+            )
         }
         composable("signup") {
             SignUpPage()
