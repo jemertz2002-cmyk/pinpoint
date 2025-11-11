@@ -1,6 +1,5 @@
-package com.cs407.pinpoint.ui
+package com.cs407.pinpoint.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
