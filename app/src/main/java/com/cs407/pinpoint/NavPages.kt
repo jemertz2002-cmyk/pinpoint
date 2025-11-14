@@ -29,10 +29,16 @@ fun PinPointApp(
             )
         }
         composable("signup") {
-            SignUpPage()
+            SignUpPage(
+                onSuccess = { navController.navigate("home") },
+                onNavigateToLogin = { navController.navigate("login") }
+            )
         }
         composable("login") {
-            LoginPage()
+            LoginPage(
+                onSuccess = { navController.navigate("home") },
+                onNavigateToSignUp = { navController.navigate("signup") }
+            )
         }
         composable("home") {
             HomePage()

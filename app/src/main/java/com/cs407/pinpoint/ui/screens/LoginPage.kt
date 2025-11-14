@@ -5,8 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.cs407.pinpoint.ui.theme.PinPointGreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -56,13 +58,19 @@ fun LoginPage(
                         error = e.message ?: "Login failed"
                     }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PinPointGreen
+            )
         ) { Text("Login") }
 
         Spacer(Modifier.height(8.dp))
 
         TextButton(onClick = onNavigateToSignUp) {
-            Text("Don't have an account? Sign Up")
+            Text(
+                text = "Don't have an account? Sign Up",
+                color = Color.Black
+            )
         }
 
         error?.let {
