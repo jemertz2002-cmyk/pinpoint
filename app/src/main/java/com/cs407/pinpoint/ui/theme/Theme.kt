@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = PinPointGreen,
+    primary = PinPointPrimary,
     onPrimary = Color.Black,
-    primaryContainer = PinPointGreenLight,
+    primaryContainer = PinPointGreenAccent,
     secondary = PinPointRed,
     background = BackgroundLight,
     surface = Color.White,
@@ -19,9 +19,9 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PinPointGreen,
+    primary = PinPointPrimary,
     onPrimary = Color.Black,
-    primaryContainer = PinPointGreenDark,
+    primaryContainer = PinPointBackground,
     secondary = PinPointRed,
     background = BackgroundDark,
     surface = Color(0xFF2A2A2A),

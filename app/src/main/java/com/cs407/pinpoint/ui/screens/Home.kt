@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import com.cs407.pinpoint.ui.theme.PinPointPrimary
+import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
+import com.cs407.pinpoint.ui.theme.PinPointSecondary
+import com.cs407.pinpoint.ui.theme.PinPointSurface
+import com.cs407.pinpoint.ui.theme.TextPrimary
 
 data class LostItem(
     val id: String,
@@ -35,8 +41,9 @@ fun HomePage(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var searchQuery by remember { mutableStateOf("") }
 
-    // Sample data - replace with actual data from your database
+
     val recentItems = remember {
         listOf(
             LostItem("1", "Wallet", "Memorial Union", "Nov 14, 2025", "John Doe"),
@@ -58,10 +65,10 @@ fun HomePage(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Divider()
+                HorizontalDivider(Modifier.padding(16.dp), DividerDefaults.Thickness, DividerDefaults.color)
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home Page Navigation Button") },
                     label = { Text("Home") },
                     selected = true,
                     onClick = {
@@ -71,7 +78,7 @@ fun HomePage(
                 )
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Add, contentDescription = "Upload Page Navigation Button") },
                     label = { Text("Upload Item") },
                     selected = false,
                     onClick = {
@@ -84,7 +91,7 @@ fun HomePage(
                 )
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "User Profile Navigation Button") },
                     label = { Text("My Profile") },
                     selected = false,
                     onClick = {
@@ -97,7 +104,7 @@ fun HomePage(
                 )
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings Page Navigation Button") },
                     label = { Text("Settings") },
                     selected = false,
                     onClick = {
@@ -114,10 +121,9 @@ fun HomePage(
         Scaffold(
             topBar = {
                 Column {
-                    // Green header with menu and title
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFF90EE90),
+                        color = PinPointGreenAccent,
                         shadowElevation = 4.dp
                     ) {
                         Row(
@@ -132,7 +138,7 @@ fun HomePage(
                                 Icon(
                                     Icons.Default.Menu,
                                     contentDescription = "Menu",
-                                    tint = Color.Black
+                                    tint = TextPrimary
                                 )
                             }
                             Text(
@@ -140,7 +146,7 @@ fun HomePage(
                                 modifier = Modifier.padding(start = 8.dp),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = TextPrimary
                             )
                         }
                     }
@@ -148,42 +154,64 @@ fun HomePage(
                     // Search bar with location
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFF90EE90)
+                        color = PinPointSecondary
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(
-                                    Color.White.copy(alpha = 0.9f),
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = Color.Gray
-                            )
-                            Text(
-                                "City, State",
+                            // Search TextField
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 8.dp),
-                                color = Color.Gray
+                                    .weight(1f),
+                                placeholder = { Text("City, State", color = Color.Gray) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = "Search",
+                                        tint = Color.Gray
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                    unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedTextColor = TextPrimary,
+                                    unfocusedTextColor = TextPrimary
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                singleLine = true
                             )
-                            Icon(
-                                Icons.Default.LocationOn,
-                                contentDescription = "Location",
-                                tint = Color.Gray
-                            )
-                            Text(
-                                "Madison, Wisconsin",
-                                modifier = Modifier.padding(start = 4.dp),
-                                color = Color.Black,
-                                fontSize = 14.sp
-                            )
+
+                            // Location indicator
+                            Row(
+                                modifier = Modifier
+                                    .background(
+                                        Color.White.copy(alpha = 0.9f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.LocationOn,
+                                    contentDescription = "Location",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    "Madison, WI",
+                                    modifier = Modifier.padding(start = 4.dp),
+                                    color = TextPrimary,
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -194,14 +222,14 @@ fun HomePage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(Color(0xFFD5E8D4))
+                    .background(PinPointSurface)
             ) {
                 Text(
                     "Recently Lost Items:",
                     modifier = Modifier.padding(16.dp),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
+                    color = TextPrimary
                 )
 
                 LazyColumn(
@@ -272,7 +300,7 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                     Icons.Default.ShoppingCart,
                     contentDescription = "Lost Item",
                     modifier = Modifier.size(48.dp),
-                    tint = Color.Black
+                    tint = TextPrimary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
