@@ -55,7 +55,11 @@ fun PinPointApp(
             UploadPage()
         }
         composable("settings") {
-            SettingsPage()
+            SettingsPage(
+                onBack = {},
+                onSignOut = {},
+                onDeleteAccount = {}
+            )
         }
     }
 }

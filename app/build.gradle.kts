@@ -74,11 +74,16 @@ dependencies {
     implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
     implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
 
-    //For ViewModels
+    // For ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
 
-    //For location
+    // For location
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
+    // Used for keeping track of camera file
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Extra Icons
+    implementation("androidx.compose.material:material-icons-extended")
 }
