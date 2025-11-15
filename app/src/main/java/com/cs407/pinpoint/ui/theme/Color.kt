@@ -2,9 +2,16 @@ package com.cs407.pinpoint.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Primary Colors
+val PinPointGreen = Color(0xFF7DFFB3) // This matches the green in your image
 
-val Green40 = Color(0xFF52E88B)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// You can also define variations if needed
+val PinPointGreenLight = Color(0xFF9DFFCA)
+val PinPointGreenDark = Color(0xFF5FE89A)
+
+// Other colors
+val PinPointRed = Color(0xFFE74C3C) // For the pin icon
+val BackgroundLight = Color(0xFFF5F5F5)
+val BackgroundDark = Color(0xFF1A1A1A)
+val TextPrimary = Color(0xFF1A1A1A)
+val TextSecondary = Color(0xFF666666)
