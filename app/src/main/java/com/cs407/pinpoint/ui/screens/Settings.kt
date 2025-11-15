@@ -128,7 +128,8 @@ private fun SettingSwitchRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = Color(0xFF52E88B)
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                checkedThumbColor = Color.White,
             )
         )
     }
