@@ -43,10 +43,22 @@ fun PinPointApp(
             )
         }
         composable("home") {
-            HomePage()
+            HomePage(
+                onNavigateToItem = { itemName ->
+                    navController.navigate("item_page/$itemName")
+                },
+                onNavigateToUser = { navController.navigate("user_page") },
+                onNavigateToUpload = { navController.navigate("upload_page") },
+                onNavigateToSettings = { navController.navigate("settings") }
+            )
         }
-        composable("item_page") {
-            ItemPage()
+
+        composable("item_page/{itemName}") { backStackEntry ->
+            val itemName = backStackEntry.arguments?.getString("itemName") ?: "Unknown Item"
+            ItemPage(
+                itemName = itemName,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable("user_page") {
             UserPage()
