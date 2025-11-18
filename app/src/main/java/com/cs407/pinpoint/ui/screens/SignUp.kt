@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.cs407.pinpoint.ui.theme.PinPointGreen
+import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 
@@ -161,7 +161,7 @@ fun SignUpPage(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PinPointGreen
+                    containerColor = PinPointPrimary
                 ),
                 enabled = !isLoading
             ) {

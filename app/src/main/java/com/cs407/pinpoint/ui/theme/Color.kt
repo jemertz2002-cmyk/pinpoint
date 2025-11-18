@@ -2,6 +2,12 @@ package com.cs407.pinpoint.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Primary Colors
+val PinPointPrimary = Color(0xFF2ECC71)
+val PinPointSecondary = Color(0xFFA3E4D7)
+val PinPointGreenAccent = Color(0xFF1ABC9C)
+val PinPointBackground = Color(0xFFF2F4F4)
+val PinPointSurface = Color(0xffeffff6)
 val PinPointGreen = Color(0xFF7DFFB3)
 
 val PinPointGreenLight = Color(0xFF9DFFCA)

@@ -31,16 +31,17 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cs407.pinpoint.R
-
-/* IDK where, but we can pick a color to be 'primary' 0*/
-private val TopBarColor = Color(0xFF62BF6E)
-private val CardColor = Color(0xFF62BF6E)
+import com.cs407.pinpoint.ui.theme.PinPointPrimary
+import com.cs407.pinpoint.ui.theme.PinPointSecondary
+import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
+import com.cs407.pinpoint.ui.theme.PinPointBackground
+import com.cs407.pinpoint.ui.theme.PinPointSurface
+import com.cs407.pinpoint.ui.theme.TextPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
@@ -52,12 +53,13 @@ fun ItemPage(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(itemName) },
+                title = { Text(itemName, color = TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = TextPrimary
                         )
                     }
                 },
@@ -66,7 +68,7 @@ fun ItemPage(
                     Spacer(modifier = Modifier.width(48.dp))
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBarColor
+                    containerColor = PinPointGreenAccent
                 )
             )
         },
@@ -75,7 +77,7 @@ fun ItemPage(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .background(Color.White),
+                    .background(PinPointBackground),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -105,13 +107,18 @@ fun ImageCard(
             shape = MaterialTheme.shapes.extraLarge,
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = CardColor
+                containerColor = PinPointSurface
             )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(contentDescription, fontSize = 24.sp, modifier = Modifier.padding(0.dp, 8.dp))
+                Text(
+                    contentDescription,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(0.dp, 8.dp),
+                    color = TextPrimary
+                )
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = contentDescription,
@@ -122,7 +129,7 @@ fun ImageCard(
                         .size(500.dp, 300.dp)
                         .border(
                             width = 1.dp,
-                            color = Color.Black,
+                            color = TextPrimary,
                             shape = MaterialTheme.shapes.medium // border radius
                         )
                 )
@@ -134,17 +141,35 @@ fun ImageCard(
                 horizontalAlignment = Alignment.Start
             ){
                 Row(){
-                    Icon(Icons.Default.Phone, contentDescription = "Phone Icon")
-                    Text("Contact Information: (Phone or Email)", fontSize = 16.sp, modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp))
+                    Icon(
+                        Icons.Default.Phone,
+                        contentDescription = "Phone Icon",
+                        tint = TextPrimary
+                    )
+                    Text(
+                        "Contact Information: (Phone or Email)",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                        color = TextPrimary
+                    )
                 }
                 Row(){
-                    Icon(Icons.Default.AccountBox, contentDescription ="User Name")
-                    Text("UserName : default_user", fontSize = 16.sp, modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp))
+                    Icon(
+                        Icons.Default.AccountBox,
+                        contentDescription ="User Name",
+                        tint = TextPrimary
+                    )
+                    Text(
+                        "UserName : default_user",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                        color = TextPrimary
+                    )
                 }
                 /* TODO : Add a map API here...
                     where the img was taken and put a pin there */ // Idk how to do that rn
                 Spacer(Modifier.padding(64.dp))//Holder for the map
-                Text("MAP GOES HERE")
+                Text("MAP GOES HERE", color = TextPrimary)
             }
         }
     }
