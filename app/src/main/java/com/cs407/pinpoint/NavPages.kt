@@ -43,13 +43,16 @@ fun PinPointApp(
             )
         }
         composable("home") {
-            HomePage()
+            HomePage(navController = navController)
         }
         composable("item_page") {
             ItemPage()
         }
         composable("user_page") {
-            UserPage()
+            UserPage(
+                navController = navController,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable("upload_page") {
             UploadPage()
