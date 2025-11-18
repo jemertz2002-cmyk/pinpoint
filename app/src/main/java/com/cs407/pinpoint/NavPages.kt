@@ -67,11 +67,13 @@ fun PinPointApp(
             )
         }
         composable("upload_page") {
-            UploadPage()
+            UploadPage(
+                onBack = {navController.popBackStack()}
+            )
         }
         composable("settings") {
             SettingsPage(
-                onBack = {},
+                onBack = {navController.popBackStack()},
                 onSignOut = {},
                 onDeleteAccount = {}
             )
