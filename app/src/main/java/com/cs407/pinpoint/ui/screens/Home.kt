@@ -22,6 +22,15 @@ import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
 import com.cs407.pinpoint.ui.theme.PinPointSecondary
 import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 
 data class LostItem(
     val id: String,

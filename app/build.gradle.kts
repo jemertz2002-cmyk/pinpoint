@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.6.7")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
@@ -74,11 +75,16 @@ dependencies {
     implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
     implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
 
-    //For ViewModels
+    // For ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
 
-    //For location
+    // For location
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
+    // Used for keeping track of camera file
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Extra Icons
+    implementation("androidx.compose.material:material-icons-extended")
 }

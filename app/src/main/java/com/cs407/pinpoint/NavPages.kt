@@ -61,13 +61,20 @@ fun PinPointApp(
             )
         }
         composable("user_page") {
-            UserPage()
+            UserPage(
+                navController = navController,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable("upload_page") {
             UploadPage()
         }
         composable("settings") {
-            SettingsPage()
+            SettingsPage(
+                onBack = {},
+                onSignOut = {},
+                onDeleteAccount = {}
+            )
         }
     }
 }

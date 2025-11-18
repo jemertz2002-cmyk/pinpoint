@@ -8,10 +8,16 @@ val PinPointSecondary = Color(0xFFA3E4D7)
 val PinPointGreenAccent = Color(0xFF1ABC9C)
 val PinPointBackground = Color(0xFFF2F4F4)
 val PinPointSurface = Color(0xffeffff6)
+val PinPointGreen = Color(0xFF7DFFB3)
 
-// Other colors
-val PinPointRed = Color(0xFFE74C3C) // For the pin icon
+val PinPointGreenLight = Color(0xFF9DFFCA)
+val PinPointGreenDark = Color(0xFF5FE89A)
+
+val PinPointRed = Color(0xFFE74C3C)
 val BackgroundLight = Color(0xFFF5F5F5)
 val BackgroundDark = Color(0xFF1A1A1A)
 val TextPrimary = Color(0xFF1A1A1A)
 val TextSecondary = Color(0xFF666666)
+
+val BackgroundMint = Color(0xFFE0F2E9)
+val ButtonRed = Color(0xFFE57373)
