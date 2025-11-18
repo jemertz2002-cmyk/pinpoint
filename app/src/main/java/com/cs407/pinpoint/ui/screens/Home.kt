@@ -10,8 +10,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -279,22 +277,22 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Item Name",
+                    "Item Name: ${item.name}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "Location:",
+                    "Location: ${item.location}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "Date Posted:",
+                    "Date Posted: ${item.datePosted}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "User:",
+                    "User: ${item.user}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
