@@ -73,9 +73,17 @@ fun PinPointApp(
         }
         composable("settings") {
             SettingsPage(
-                onBack = {navController.popBackStack()},
-                onSignOut = {},
-                onDeleteAccount = {}
+                onBack = { navController.popBackStack() },
+                onSignOut = {
+                    navController.navigate("landing") {
+                        popUpTo("landing") { inclusive = true }
+                    }
+                },
+                onDeleteAccount = {
+                    navController.navigate("landing") {
+                        popUpTo("landing") { inclusive = true }
+                    }
+                }
             )
         }
     }
