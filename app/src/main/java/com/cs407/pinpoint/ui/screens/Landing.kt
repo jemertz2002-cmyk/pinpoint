@@ -52,6 +52,8 @@ fun LandingPage(
             )
         }
 
+        // Using weight(1f) here to fill available space.
+        // This ensures the buttons stay at the bottom but don't get pushed off screen on smaller devices.
         Spacer(Modifier.weight(1f))
 
         Column(
