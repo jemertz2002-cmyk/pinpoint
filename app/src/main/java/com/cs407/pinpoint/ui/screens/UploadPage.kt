@@ -1,6 +1,7 @@
 package com.cs407.pinpoint.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -41,21 +42,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import java.io.File
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.cs407.pinpoint.R
+import com.cs407.pinpoint.ui.viewModels.LostItemsViewModel
+import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadPage(
-    onBack : () -> Unit = {}
+    onBack : () -> Unit = {},
+    viewModel: LostItemsViewModel = viewModel()
 ) {
-    var itemName by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var additionalInfo by remember { mutableStateOf("") }
+    var itemName by remember { mutableStateOf<String?>(null) }
+    var location by remember { mutableStateOf<String?>(null) }
+    var description by remember { mutableStateOf<String?>(null) }
+    var additionalInfo by remember { mutableStateOf<String?>(null) }
 
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
@@ -64,6 +73,7 @@ fun UploadPage(
     val imageFile = remember {
         File.createTempFile("captured_", ".jpg", context.cacheDir)
     }
+
     val imageUri = remember {
         FileProvider.getUriForFile(
             context,
@@ -127,7 +137,7 @@ fun UploadPage(
             Spacer(Modifier.height(36.dp))
 
             OutlinedTextField(
-                value = itemName,
+                value = itemName ?: "",
                 onValueChange = { itemName = it },
                 label = { Text("Item Name") },
                 singleLine = true,
@@ -136,7 +146,7 @@ fun UploadPage(
             Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = location,
+                value = location ?: "",
                 onValueChange = { location = it },
                 label = { Text("Location") },
                 singleLine = true,
@@ -145,7 +155,7 @@ fun UploadPage(
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = description,
+                value = description ?: "",
                 onValueChange = { description = it },
                 label = { Text("description") },
                 singleLine = true,
@@ -154,7 +164,7 @@ fun UploadPage(
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = additionalInfo,
+                value = additionalInfo ?: "",
                 onValueChange = { additionalInfo = it },
                 label = { Text("Additional Info") },
                 singleLine = true,
@@ -163,7 +173,9 @@ fun UploadPage(
             Spacer(Modifier.height(16.dp))
 
             Button(
-                onClick = {},
+                onClick = {
+                    viewModel.submitLostItem(itemName, location, description, additionalInfo)
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Green,
                 ),
@@ -173,7 +185,7 @@ fun UploadPage(
             Spacer(Modifier.height(8.dp))
 
             Button(
-                onClick = {},
+                onClick = onBack,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Red,
                 ),
@@ -181,6 +193,4 @@ fun UploadPage(
             ) { Text("Cancel") }
         }
     }
-
-
 }

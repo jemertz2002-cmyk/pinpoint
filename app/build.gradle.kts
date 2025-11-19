@@ -68,6 +68,7 @@ dependencies {
     // Dependencies for Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     // For Google Maps
     val mapsComposeVersion = "4.4.1"
@@ -87,4 +88,6 @@ dependencies {
 
     // Extra Icons
     implementation("androidx.compose.material:material-icons-extended")
+
+
 }
