@@ -32,12 +32,11 @@ fun LandingPage(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Column(
-            modifier = Modifier.padding(top = 96.dp)
+            modifier = Modifier.padding(top = 96.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "PinPoint",
@@ -53,17 +52,17 @@ fun LandingPage(
             )
         }
 
-        Spacer(Modifier.height(200.dp))
+        Spacer(Modifier.weight(1f))
 
         Column(
-            modifier = Modifier.padding(bottom = 192.dp)
+            modifier = Modifier.padding(bottom = 48.dp)
         ) {
             Button(
                 onClick = onSignUp,
                 colors = ButtonDefaults.buttonColors(containerColor = mint),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Sign Up", color = Color.Black, fontSize = 20.sp,)
+                Text("Sign Up", color = Color.Black, fontSize = 20.sp)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -73,7 +72,7 @@ fun LandingPage(
                 colors = ButtonDefaults.buttonColors(containerColor = mint),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Login", color = Color.Black, fontSize = 20.sp,)
+                Text("Login", color = Color.Black, fontSize = 20.sp)
             }
         }
     }
