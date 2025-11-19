@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -21,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +45,14 @@ fun SettingsPage(
     onSignOut: () -> Unit = {},
     onDeleteAccount: () -> Unit = {}
 ) {
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled by remember { mutableStateOf(false) }
+    var showSignOutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -64,13 +75,13 @@ fun SettingsPage(
                 .fillMaxSize()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-
+            // Display actual user info
             Text(
-                text = "John Smith",
+                text = currentUser?.displayName ?: "User",
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "johnsmith@example.com",
+                text = currentUser?.email ?: "No email",
                 color = Color.Gray
             )
 
@@ -95,16 +106,90 @@ fun SettingsPage(
 
             SettingTextRow(
                 title = "Sign Out",
-                onClick = onSignOut
+                onClick = { showSignOutDialog = true }
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Color(0xFFE0E0E0))
 
             SettingTextRow(
                 title = "Delete Account",
-                onClick = onDeleteAccount
+                onClick = { showDeleteDialog = true },
+                textColor = Color.Red
             )
+
+            // Show error message if any
+            error?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
+    }
+
+    // Sign Out Confirmation Dialog
+    if (showSignOutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSignOutDialog = false },
+            title = { Text("Sign Out") },
+            text = { Text("Are you sure you want to sign out?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        auth.signOut()
+                        showSignOutDialog = false
+                        onSignOut()
+                    }
+                ) {
+                    Text("Sign Out")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSignOutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Delete Account Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Account") },
+            text = { Text("Are you sure you want to permanently delete your account? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        currentUser?.delete()
+                            ?.addOnSuccessListener {
+                                showDeleteDialog = false
+                                onDeleteAccount()
+                            }
+                            ?.addOnFailureListener { e ->
+                                showDeleteDialog = false
+                                error = when {
+                                    e.message?.contains("requires-recent-login") == true ->
+                                        "Please sign out and sign in again before deleting your account"
+                                    else -> e.message ?: "Failed to delete account"
+                                }
+                            }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    )
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -138,7 +223,8 @@ private fun SettingSwitchRow(
 @Composable
 private fun SettingTextRow(
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    textColor: Color = Color.Unspecified
 ) {
     Box(
         modifier = Modifier
@@ -146,6 +232,6 @@ private fun SettingTextRow(
             .clickable(onClick = onClick)
             .padding(vertical = 16.dp)
     ) {
-        Text(title)
+        Text(title, color = textColor)
     }
 }

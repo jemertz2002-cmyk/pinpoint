@@ -277,22 +277,22 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Item Name",
+                    "Item Name: ${item.name}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "Location:",
+                    "Location: ${item.location}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "Date Posted:",
+                    "Date Posted: ${item.datePosted}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "User:",
+                    "User: ${item.user}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )

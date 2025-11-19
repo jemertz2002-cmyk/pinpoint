@@ -49,7 +49,9 @@ import coil.compose.rememberAsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadPage() {
+fun UploadPage(
+    onBack : () -> Unit = {}
+) {
     var itemName by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -84,7 +86,7 @@ fun UploadPage() {
             TopAppBar(
                 title = { Text("Upload Photo") },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
