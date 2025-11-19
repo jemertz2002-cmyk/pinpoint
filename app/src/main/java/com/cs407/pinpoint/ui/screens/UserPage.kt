@@ -23,37 +23,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.cs407.pinpoint.ui.theme.BackgroundMint
 import com.cs407.pinpoint.ui.theme.ButtonRed
 import com.cs407.pinpoint.ui.theme.PinPointGreen
 import com.cs407.pinpoint.ui.theme.PinPointGreenLight
+import com.cs407.pinpoint.ui.viewModels.ItemViewModel
+import com.cs407.pinpoint.ui.viewModels.PinPointItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-
-data class ItemPost(
-    val id: Int,
-    val itemName: String,
-    val location: String,
-    val datePosted: String,
-    val user: String
-)
 
 @Composable
 fun UserPage(
     navController: NavHostController,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    // using ViewModel here to separate UI code from data logic.
+    viewModel: ItemViewModel = viewModel()
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
 
+    // used LaunchedEffect so data fetch only runs once when user enters the screen.
+    LaunchedEffect(currentUser) {
+        viewModel.loadItemsForUser(currentUser?.email)
+    }
+
+    // Observing StateFlow from ViewModel.
+    // List updates automatically if items are deleted/added.
+    val allItems by viewModel.uiState.collectAsState()
+
+    // State for tracking active tab (Lost vs Found)
     var selectedTab by remember { mutableStateOf("Lost") }
 
-    val mockItems = listOf(
-        ItemPost(1, "Blue HydroFlask", "College Library", "Nov 12, 2025", "bbadger"),
-        ItemPost(2, "AirPods Pro Case", "Union South", "Nov 11, 2025", "bbadger"),
-        ItemPost(3, "WiscCard", "Bascom Hill", "Nov 10, 2025", "bbadger")
-    )
+    // Filtering list based on tab selection to show relevant items
+    val displayedItems = allItems.filter { item ->
+        item.type == selectedTab
+    }
 
     Surface(
         color = BackgroundMint,
@@ -72,10 +78,12 @@ fun UserPage(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Displaying user profile info (picture, email, name)
                 item {
                     ProfileInfoCard(user = currentUser)
                 }
 
+                // Tab switcher for filtering the list
                 item {
                     TabButtons(
                         selectedTab = selectedTab,
@@ -83,8 +91,14 @@ fun UserPage(
                     )
                 }
 
-                items(mockItems) { item ->
-                    ItemPostCard(item = item)
+                // Using filtered list from ViewModel state
+                items(displayedItems) { item ->
+                    ItemPostCard(
+                        item = item,
+                        // Passing events to ViewModel instead of handling logic in UI
+                        onMarkFound = { viewModel.markAsFound(item.id) },
+                        onDelete = { viewModel.deletePost(item.id) }
+                    )
                 }
             }
         }
@@ -137,6 +151,7 @@ fun ProfileInfoCard(user: FirebaseUser?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Placeholder icon, planning to add actual profile image upload later
             Image(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Profile Picture",
@@ -192,6 +207,7 @@ fun TabButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    // Visual feedback for selected tab
     val backgroundColor = if (isSelected) PinPointGreen else Color.White
     val contentColor = if (isSelected) Color.Black else Color.Gray
 
@@ -210,7 +226,11 @@ fun TabButton(
 }
 
 @Composable
-fun ItemPostCard(item: ItemPost) {
+fun ItemPostCard(
+    item: PinPointItem,
+    onMarkFound: () -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,8 +268,9 @@ fun ItemPostCard(item: ItemPost) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
+                // Calls lambda function passed from parent composable
                 Button(
-                    onClick = { },
+                    onClick = onMarkFound,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -263,7 +284,7 @@ fun ItemPostCard(item: ItemPost) {
                 Spacer(modifier = Modifier.width(16.dp))
 
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onDelete,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
