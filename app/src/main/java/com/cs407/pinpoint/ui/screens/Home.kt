@@ -245,7 +245,7 @@ fun HomePage(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(recentItems) { item ->
-                        LostItemCard(item, onClick = { onNavigateToItem(item.name) })
+                        LostItemCard(item, onClick = { onNavigateToItem(item.name)})
                     }
                 }
             }
