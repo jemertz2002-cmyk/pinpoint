@@ -13,6 +13,17 @@ import androidx.compose.ui.unit.dp
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Login page composable that handles user authentication.
+ *
+ * Displays a login form with email and password fields, validates user input,
+ * and authenticates users through Firebase Authentication. Includes error handling,
+ * loading states, and navigation to other screens.
+ *
+ * @param onSuccess Callback function invoked when user successfully logs in
+ * @param onNavigateToSignUp Callback function to navigate to the sign-up page
+ * @param onBack Callback function to navigate back to the landing page
+ */
 @Composable
 fun LoginPage(
     onSuccess: () -> Unit = {},
@@ -25,7 +36,12 @@ fun LoginPage(
     var error by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
-    // Email validation
+    /**
+     * Validates email address format using Android's built-in email pattern matcher.
+     *
+     * @param email The email string to validate
+     * @return true if the email format is valid, false otherwise
+     */
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
@@ -55,6 +71,7 @@ fun LoginPage(
             Text("Login to PinPoint", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(16.dp))
 
+            // Email input field with validation
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -74,6 +91,7 @@ fun LoginPage(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Password input field
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -88,6 +106,7 @@ fun LoginPage(
             )
             Spacer(Modifier.height(16.dp))
 
+            // Login button with Firebase authentication
             Button(
                 onClick = {
                     when {
@@ -98,6 +117,7 @@ fun LoginPage(
                             isLoading = true
                             error = null
 
+                            // Authenticate user with Firebase
                             auth.signInWithEmailAndPassword(email, password)
                                 .addOnSuccessListener {
                                     isLoading = false
@@ -105,6 +125,7 @@ fun LoginPage(
                                 }
                                 .addOnFailureListener { e ->
                                     isLoading = false
+                                    // Parse Firebase errors into user-friendly messages
                                     error = when {
                                         e.message?.contains("no user record") == true ||
                                                 e.message?.contains("invalid-credential") == true ||
@@ -138,6 +159,7 @@ fun LoginPage(
 
             Spacer(Modifier.height(8.dp))
 
+            // Navigate to sign-up page
             TextButton(
                 onClick = onNavigateToSignUp,
                 enabled = !isLoading
@@ -148,6 +170,7 @@ fun LoginPage(
                 )
             }
 
+            // Display error messages
             error?.let {
                 Spacer(Modifier.height(12.dp))
                 Text(
