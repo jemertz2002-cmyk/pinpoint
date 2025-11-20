@@ -33,6 +33,17 @@ import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 
+/**
+ * Sign up page composable that handles new user registration.
+ *
+ * Displays a registration form with email, username, password, and password confirmation fields.
+ * Validates user input, creates a new Firebase Authentication account, and stores the username
+ * in the user's Firebase profile. Includes error handling, loading states, and navigation.
+ *
+ * @param onSuccess Callback function invoked when user successfully signs up
+ * @param onNavigateToLogin Callback function to navigate to the login page
+ * @param onBack Callback function to navigate back to the landing page
+ */
 @Composable
 fun SignUpPage(
     onSuccess: () -> Unit = {},
@@ -72,6 +83,7 @@ fun SignUpPage(
             Text("Sign Up for PinPoint", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(16.dp))
 
+            // Email input field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -82,6 +94,7 @@ fun SignUpPage(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Username input field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -92,6 +105,7 @@ fun SignUpPage(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Password input field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -103,6 +117,7 @@ fun SignUpPage(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Password confirmation field
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -114,9 +129,10 @@ fun SignUpPage(
             )
             Spacer(Modifier.height(16.dp))
 
+            // Sign up button with Firebase account creation
             Button(
                 onClick = {
-                    // Validate inputs
+                    // Validate all input fields before creating account
                     when {
                         email.isBlank() -> error = "Email cannot be empty"
                         username.isBlank() -> error = "Username cannot be empty"
@@ -127,10 +143,10 @@ fun SignUpPage(
                             isLoading = true
                             error = null
 
-                            // Create user with Firebase Auth
+                            // Create new Firebase Authentication user
                             auth.createUserWithEmailAndPassword(email, password)
                                 .addOnSuccessListener { authResult ->
-                                    // Update user profile with username
+                                    // Store username in Firebase user profile
                                     val profileUpdates = UserProfileChangeRequest.Builder()
                                         .setDisplayName(username)
                                         .build()
@@ -148,6 +164,7 @@ fun SignUpPage(
                                 }
                                 .addOnFailureListener { e ->
                                     isLoading = false
+                                    // Parse Firebase errors into user-friendly messages
                                     error = when {
                                         e.message?.contains("email address is already in use") == true ->
                                             "This email is already registered"
@@ -177,6 +194,7 @@ fun SignUpPage(
 
             Spacer(Modifier.height(8.dp))
 
+            // Navigate to login page
             TextButton(
                 onClick = onNavigateToLogin,
                 enabled = !isLoading
@@ -187,6 +205,7 @@ fun SignUpPage(
                 )
             }
 
+            // Display error messages
             error?.let {
                 Spacer(Modifier.height(12.dp))
                 Text(it, color = MaterialTheme.colorScheme.error)
