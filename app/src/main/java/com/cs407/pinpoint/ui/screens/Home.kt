@@ -8,56 +8,70 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
 import com.cs407.pinpoint.ui.theme.PinPointSecondary
 import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import com.cs407.pinpoint.domain.models.LostItem
+import com.cs407.pinpoint.viewModels.LostItemsViewModel
 
-data class LostItem(
-    val id: String,
-    val name: String,
-    val location: String,
-    val datePosted: String,
-    val user: String
-)
-
+/**
+ * Home page composable that displays the main feed of lost items from Firebase.
+ *
+ * Shows a navigation drawer, location filtering with city text input and state dropdown,
+ * and a list of lost items fetched from Firestore in real-time.
+ *
+ * @param onNavigateToItem Callback to navigate to item details page
+ * @param onNavigateToUser Callback to navigate to user profile page
+ * @param onNavigateToUpload Callback to navigate to upload page
+ * @param onNavigateToSettings Callback to navigate to settings page
+ * @param viewModel ViewModel for managing lost items data
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
     onNavigateToItem: (String) -> Unit = {},
     onNavigateToUser: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    viewModel: LostItemsViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var searchQuery by remember { mutableStateOf("") }
 
+    // Collect data from ViewModel
+    val items by viewModel.items.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    val recentItems = remember {
-        listOf(
-            LostItem("1", "Wallet", "Memorial Union", "Nov 14, 2025", "John Doe"),
-            LostItem("2", "Keys", "Engineering Hall", "Nov 13, 2025", "Jane Smith"),
-            LostItem("3", "Phone", "Library", "Nov 12, 2025", "Mike Johnson")
-        )
-    }
+    // Location states
+    var cityInput by remember { mutableStateOf("Madison") }
+    var selectedState by remember { mutableStateOf("Wisconsin") }
+    var stateExpanded by remember { mutableStateOf(false) }
+
+    // US States list
+    val states = listOf(
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+        "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+        "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+        "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+        "West Virginia", "Wisconsin", "Wyoming"
+    )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -128,6 +142,7 @@ fun HomePage(
         Scaffold(
             topBar = {
                 Column {
+                    // App bar with title
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = PinPointGreenAccent,
@@ -158,7 +173,7 @@ fun HomePage(
                         }
                     }
 
-                    // Search bar with location
+                    // Location selection: City text field + State dropdown
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = PinPointSecondary
@@ -170,17 +185,16 @@ fun HomePage(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Search TextField
+                            // City Text Field
                             TextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                modifier = Modifier
-                                    .weight(1f),
-                                placeholder = { Text("City, State", color = Color.Gray) },
+                                value = cityInput,
+                                onValueChange = { cityInput = it },
+                                modifier = Modifier.weight(1f),
+                                placeholder = { Text("City", fontSize = 12.sp, color = Color.Gray) },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.Search,
-                                        contentDescription = "Search",
+                                        contentDescription = "Search City",
                                         tint = Color.Gray
                                     )
                                 },
@@ -196,27 +210,70 @@ fun HomePage(
                                 singleLine = true
                             )
 
-                            // Location indicator
-                            Row(
+                            // State Dropdown
+                            Box(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                ExposedDropdownMenuBox(
+                                    expanded = stateExpanded,
+                                    onExpandedChange = { stateExpanded = !stateExpanded }
+                                ) {
+                                    TextField(
+                                        value = selectedState,
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("State", fontSize = 12.sp) },
+                                        trailingIcon = {
+                                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded)
+                                        },
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                            unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            focusedTextColor = TextPrimary,
+                                            unfocusedTextColor = TextPrimary
+                                        ),
+                                        modifier = Modifier
+                                            .menuAnchor()
+                                            .fillMaxWidth(),
+                                        shape = RoundedCornerShape(8.dp),
+                                        singleLine = true
+                                    )
+
+                                    ExposedDropdownMenu(
+                                        expanded = stateExpanded,
+                                        onDismissRequest = { stateExpanded = false }
+                                    ) {
+                                        states.forEach { state ->
+                                            DropdownMenuItem(
+                                                text = { Text(state) },
+                                                onClick = {
+                                                    selectedState = state
+                                                    stateExpanded = false
+                                                    viewModel.filterByLocation(cityInput, state)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Search button to apply city filter
+                            IconButton(
+                                onClick = {
+                                    viewModel.filterByLocation(cityInput, selectedState)
+                                },
                                 modifier = Modifier
                                     .background(
                                         Color.White.copy(alpha = 0.9f),
                                         RoundedCornerShape(8.dp)
                                     )
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     Icons.Default.LocationOn,
-                                    contentDescription = "Location",
-                                    tint = Color.Gray,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    "Madison, WI",
-                                    modifier = Modifier.padding(start = 4.dp),
-                                    color = TextPrimary,
-                                    fontSize = 12.sp
+                                    contentDescription = "Search Location",
+                                    tint = PinPointPrimary
                                 )
                             }
                         }
@@ -239,13 +296,71 @@ fun HomePage(
                     color = TextPrimary
                 )
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(recentItems) { item ->
-                        LostItemCard(item, onClick = { onNavigateToItem(item.name)})
+                // Show loading indicator
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PinPointPrimary)
+                    }
+                }
+
+                // Show error message
+                error?.let { errorMessage ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = errorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                            Button(onClick = { viewModel.refresh() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+
+                // Show items list
+                if (!isLoading && error == null) {
+                    if (items.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    "No items found in this location",
+                                    color = Color.Gray,
+                                    fontSize = 16.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextButton(onClick = { viewModel.refresh() }) {
+                                    Text("View all items")
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(items) { item ->
+                                LostItemCard(item, onClick = { onNavigateToItem(item.id) })
+                            }
+                        }
                     }
                 }
             }
@@ -277,9 +392,10 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Item Name: ${item.name}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    "Item: ${item.itemName}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
                 )
                 Text(
                     "Location: ${item.location}",
@@ -287,13 +403,13 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                     color = Color.Gray
                 )
                 Text(
-                    "Date Posted: ${item.datePosted}",
+                    "City: ${item.city}, ${item.state}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
                 Text(
-                    "User: ${item.user}",
-                    fontSize = 12.sp,
+                    "Posted: ${item.datePosted}",
+                    fontSize = 11.sp,
                     color = Color.Gray
                 )
             }
@@ -311,10 +427,9 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "Lost Item\nImage",
+                    "Image",
                     fontSize = 10.sp,
-                    color = Color.Gray,
-                    lineHeight = 12.sp
+                    color = Color.Gray
                 )
             }
         }
