@@ -58,10 +58,10 @@ import java.util.Date
 import java.util.Locale
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.Firebase
-import com.cs407.pinpoint.viewModels.LostItemsViewModel
 import com.google.firebase.auth.auth
 import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
+import com.cs407.pinpoint.ui.viewModels.UploadViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -77,7 +77,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun UploadPage(
     onBack: () -> Unit = {},
-    viewModel: LostItemsViewModel = viewModel()
+    viewModel: UploadViewModel = viewModel()
 ) {
     var itemName by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }

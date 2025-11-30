@@ -23,7 +23,7 @@ import com.cs407.pinpoint.ui.theme.PinPointSecondary
 import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
 import com.cs407.pinpoint.domain.models.LostItem
-import com.cs407.pinpoint.viewModels.LostItemsViewModel
+import com.cs407.pinpoint.ui.viewModels.HomeViewModel
 
 /**
  * Home page composable that displays the main feed of lost items from Firebase.
@@ -44,7 +44,7 @@ fun HomePage(
     onNavigateToUser: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
-    viewModel: LostItemsViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
