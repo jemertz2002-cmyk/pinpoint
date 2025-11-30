@@ -3,6 +3,7 @@ package com.cs407.pinpoint.ui.viewModels
 import androidx.lifecycle.ViewModel
 import com.cs407.pinpoint.data.repository.LostItemRepository
 import com.cs407.pinpoint.domain.models.LostItem
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -18,6 +19,9 @@ class UploadViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(ItemState())
     val uiState = _uiState.asStateFlow()
+
+    private val _selectedLocation = MutableStateFlow<LatLng?>(null)
+    val selectedLocation = _selectedLocation.asStateFlow()
 
     fun submitLostItem(lostItem: LostItem) {
         if (lostItem.itemName.isBlank() ||
@@ -37,5 +41,9 @@ class UploadViewModel : ViewModel() {
             }
             _uiState.value = _uiState.value.copy(eventId = _uiState.value.eventId + 1)
         }
+    }
+
+    fun onMapClick(latLng: LatLng) {
+        _selectedLocation.value = latLng
     }
 }

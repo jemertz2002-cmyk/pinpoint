@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -28,12 +28,14 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +64,12 @@ import com.google.firebase.auth.auth
 import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.cs407.pinpoint.ui.viewModels.UploadViewModel
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
 /**
@@ -87,7 +95,9 @@ fun UploadPage(
     var description by remember { mutableStateOf("") }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val selectedLocation by viewModel.selectedLocation.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showLocationDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     var photoUri by remember { mutableStateOf<Uri?>(null) }
@@ -151,8 +161,8 @@ fun UploadPage(
             datePosted = currentDate,
             userName = user?.displayName ?: "Anonymous",
             imageUrl = "", // TODO: Upload photo to Firebase Storage
-            latitude = 0.0, // TODO: Get from location picker
-            longitude = 0.0
+            latitude = selectedLocation?.latitude ?: 0.0,
+            longitude = selectedLocation?.longitude ?: 0.0
         )
         viewModel.submitLostItem(lostItem)
     }
@@ -245,6 +255,28 @@ fun UploadPage(
             }
 
             Spacer(Modifier.height(24.dp))
+
+            Button(
+                onClick = { showLocationDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Select Location")
+            }
+            if (showLocationDialog) {
+                LocationPickerDialog(
+                    selectedLocation = selectedLocation,
+                    onDismissRequest = { showLocationDialog = false },
+                    onLocationConfirmed = { latLng ->
+                        viewModel.onMapClick(latLng)
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             // Item Name
             OutlinedTextField(
@@ -353,4 +385,65 @@ fun UploadPage(
             }
         }
     }
+}
+
+@Composable
+fun LocationPickerDialog(
+    selectedLocation: LatLng?,
+    onDismissRequest: () -> Unit,
+    onLocationConfirmed: (LatLng) -> Unit
+) {
+    val initialPosition = LatLng(37.7749, -122.4194)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            selectedLocation ?: initialPosition,
+            10f
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = "Select a location",
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp),
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    onLocationConfirmed(latLng)
+                }
+            ) {
+                selectedLocation?.let { location ->
+                    Marker(
+                        state = MarkerState(position = location),
+                        title = "Selected location"
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = selectedLocation != null,
+                onClick = {
+                    selectedLocation?.let { onLocationConfirmed(it) }
+                    onDismissRequest()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
 }
