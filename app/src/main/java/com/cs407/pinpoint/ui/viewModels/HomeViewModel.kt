@@ -1,4 +1,4 @@
-package com.cs407.pinpoint.viewModels
+package com.cs407.pinpoint.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,18 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-data class ItemState(
-    val error: String? = null,
-    val successMsg: String? = null,
-    val eventId: Int = 0,
-)
-
-class LostItemsViewModel : ViewModel() {
+class HomeViewModel : ViewModel() {
 
     private val repository = LostItemRepository()
-
-    private val _uiState = MutableStateFlow(ItemState())
-    val uiState = _uiState.asStateFlow()
 
     private val _items = MutableStateFlow<List<LostItem>>(emptyList())
     val items: StateFlow<List<LostItem>> = _items.asStateFlow()
@@ -33,26 +24,6 @@ class LostItemsViewModel : ViewModel() {
 
     init {
         loadAllItems()
-    }
-
-    fun submitLostItem(lostItem: LostItem) {
-        if (lostItem.itemName.isBlank() ||
-            lostItem.location.isBlank() ||
-            lostItem.description.isBlank() ||
-            lostItem.city.isBlank() ||
-            lostItem.state.isBlank()
-        ) {
-            _uiState.value = _uiState.value.copy(successMsg = null)
-            _uiState.value = _uiState.value.copy(error = "Make sure all fields are filled out!")
-            _uiState.value = _uiState.value.copy(eventId = _uiState.value.eventId + 1)
-        } else {
-            _uiState.value = _uiState.value.copy(successMsg = null)
-            _uiState.value = _uiState.value.copy(error = repository.submitLostItem(lostItem))
-            if (_uiState.value.error == null) {
-                _uiState.value = _uiState.value.copy(successMsg = "Successfully created lost item!")
-            }
-            _uiState.value = _uiState.value.copy(eventId = _uiState.value.eventId + 1)
-        }
     }
 
     private fun loadAllItems() {
