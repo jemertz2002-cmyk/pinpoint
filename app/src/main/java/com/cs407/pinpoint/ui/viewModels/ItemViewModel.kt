@@ -32,7 +32,6 @@ class ItemViewModel : ViewModel() {
         if (userEmail == null) return
 
         viewModelScope.launch {
-            // TODO: Replace with Supabase API call.
             // Using hardcoded list for now to test UI and Navigation logic.
             delay(500) // Simulating network latency
 
@@ -54,7 +53,6 @@ class ItemViewModel : ViewModel() {
         _uiState.value = _uiState.value.filter { it.id != itemId }
 
         viewModelScope.launch {
-            // TODO: Add database call here to delete/update item in Supabase
         }
     }
 
