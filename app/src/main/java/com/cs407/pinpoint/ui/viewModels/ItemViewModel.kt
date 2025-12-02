@@ -40,16 +40,24 @@ class ItemViewModel : ViewModel() {
         }
     }
 
-    // Handles the logic when a user deletes a post or marks it as found.
-    fun markAsFound(itemId: String) {
-        // Instantly removes the item from the screen so the app feels responsive,
-        // even before the database finishes processing.
-        _uiState.value = _uiState.value.filter { it.id != itemId }
 
-        viewModelScope.launch {
-            // Future TODO: Will add the specific repository call here to delete
-            // the item from Firebase permanently once the function is available in the repo.
-        }
+    fun markAsFound(itemId: String) {
+        //  Remove it from the screen immediately
+        val currentList = _uiState.value
+        _uiState.value = currentList.filter { it.id != itemId }
+
+        // Permanently delete it from Firebase
+        // Claim action—it removes the lost item record.
+        repository.deleteItem(
+            itemId = itemId,
+            onSuccess = {
+                // It's gone from the database.
+            },
+            onFailure = { e ->
+                // If it fails, put the item back in the list
+                _uiState.value = currentList
+            }
+        )
     }
 
     // Reuses logic since deleting and marking as found currently have the same
