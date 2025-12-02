@@ -2,63 +2,59 @@ package com.cs407.pinpoint.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.cs407.pinpoint.data.repository.LostItemRepository
+import com.cs407.pinpoint.domain.models.LostItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// Moved this data class here so it can be shared across the Home and User screens
-// to avoid duplicate models. Represents a single item post.
-data class PinPointItem(
-    val id: String,
-    val itemName: String,
-    val location: String,
-    val datePosted: String,
-    val user: String, // The username or email of the person who posted it
-    val type: String  // Used to filter between Lost and Found tabs
-)
-
 class ItemViewModel : ViewModel() {
 
-    // Using StateFlow for Reactive UI. The UI observes this list,
-    // so whenever _uiState updates, the screen automatically refreshes.
-    private val _uiState = MutableStateFlow<List<PinPointItem>>(emptyList())
-    val uiState: StateFlow<List<PinPointItem>> = _uiState.asStateFlow()
+    // Initialized the repository here. This is the bridge to the Firebase database
+    // set up to fetch actual data.
+    private val repository = LostItemRepository()
 
-    // Simulates fetching data for the specific logged-in user.
-    // Uses userEmail to only show posts belonging to the profile being viewed.
-    fun loadItemsForUser(userEmail: String?) {
-        if (userEmail == null) return
+    // Uses StateFlow to hold the list of items.
+    private val _uiState = MutableStateFlow<List<LostItem>>(emptyList())
+    val uiState: StateFlow<List<LostItem>> = _uiState.asStateFlow()
+
+    // Loads real data from the database.
+    // Accepts userId to filter the list and only show items belonging to the current user.
+    fun loadItemsForUser(userId: String?) {
+        if (userId == null) return
 
         viewModelScope.launch {
-            // Using hardcoded list for now to test UI and Navigation logic.
-            delay(500) // Simulating network latency
+            // Calls the repository to get the stream of items.
+            // Uses .collect because it's a Flow—if the database changes in real-time,
+            // this block triggers automatically to update the app.
+            repository.getAllItems().collect { allItems ->
 
-            val fetchedItems = listOf(
-                PinPointItem("1", "Blue HydroFlask", "College Library", "Nov 12, 2025", userEmail, "Lost"),
-                PinPointItem("2", "AirPods Pro Case", "Union South", "Nov 11, 2025", userEmail, "Found"),
-                PinPointItem("3", "WiscCard", "Bascom Hill", "Nov 10, 2025", userEmail, "Lost"),
-                PinPointItem("4", "Calculator", "Engineering Hall", "Nov 18, 2025", userEmail, "Found")
-            )
+                // Filters logic used here to ensure My Profile page
+                // only displays items that match the logged-in user's ID.
+                val userItems = allItems.filter { it.ownerId == userId }
 
-            _uiState.value = fetchedItems
+                // Updates the state, instantly refreshing the screen.
+                _uiState.value = userItems
+            }
         }
     }
 
-    // Logic for marking an item as found.
-    // Updates local state to remove it from the list instantly.
+    // Handles the logic when a user deletes a post or marks it as found.
     fun markAsFound(itemId: String) {
-        // Filtering the list triggers a UI recomposition
+        // Instantly removes the item from the screen so the app feels responsive,
+        // even before the database finishes processing.
         _uiState.value = _uiState.value.filter { it.id != itemId }
 
         viewModelScope.launch {
+            // Future TODO: Will add the specific repository call here to delete
+            // the item from Firebase permanently once the function is available in the repo.
         }
     }
 
-    // Logic to delete a post entirely.
+    // Reuses logic since deleting and marking as found currently have the same
+    // visual result on the user profile.
     fun deletePost(itemId: String) {
-        // Reusing markAsFound logic for the prototype phase
         markAsFound(itemId)
     }
 }
