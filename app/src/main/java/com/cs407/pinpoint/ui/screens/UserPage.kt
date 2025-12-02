@@ -25,12 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.theme.BackgroundMint
 import com.cs407.pinpoint.ui.theme.ButtonRed
 import com.cs407.pinpoint.ui.theme.PinPointGreen
 import com.cs407.pinpoint.ui.theme.PinPointGreenLight
 import com.cs407.pinpoint.ui.viewModels.ItemViewModel
-import com.cs407.pinpoint.ui.viewModels.PinPointItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -38,28 +38,30 @@ import com.google.firebase.auth.FirebaseUser
 fun UserPage(
     navController: NavHostController,
     onBack: () -> Unit,
-    // using ViewModel here to separate UI code from data logic.
+    // Use ViewModel to keep UI code separate from data logic.
     viewModel: ItemViewModel = viewModel()
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
 
-    // used LaunchedEffect so data fetch only runs once when user enters the screen.
+    // Use LaunchedEffect to trigger the data load.
+    // Passes the uid (User ID) so the ViewModel can query the database
+    // for items owned specifically by this user.
     LaunchedEffect(currentUser) {
-        viewModel.loadItemsForUser(currentUser?.email)
+        viewModel.loadItemsForUser(currentUser?.uid)
     }
 
-    // Observing StateFlow from ViewModel.
-    // List updates automatically if items are deleted/added.
+    // Use StateFlow from the ViewModel.
+    // Connects the UI to the database—when the database updates, allItems
+    // updates, and the screen redraws automatically.
     val allItems by viewModel.uiState.collectAsState()
 
-    // State for tracking active tab (Lost vs Found)
     var selectedTab by remember { mutableStateOf("Lost") }
 
-    // Filtering list based on tab selection to show relevant items
-    val displayedItems = allItems.filter { item ->
-        item.type == selectedTab
-    }
+    // Filters the list based on the selected tab ("Lost" vs "Found").
+    // Since the current database schema doesn't have a "type" field yet,
+    // this currently shows all items, but the logic is ready for that field.
+    val displayedItems = allItems
 
     Surface(
         color = BackgroundMint,
@@ -71,6 +73,8 @@ fun UserPage(
         ) {
             ProfileTopBar(onBack = onBack)
 
+            // Use LazyColumn to efficiently render the list of items.
+            // Handles memory management automatically by only drawing visible items.
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -78,12 +82,11 @@ fun UserPage(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Displaying user profile info (picture, email, name)
+                // Displays the dynamic user profile info from Firebase (picture, email, name)
                 item {
                     ProfileInfoCard(user = currentUser)
                 }
 
-                // Tab switcher for filtering the list
                 item {
                     TabButtons(
                         selectedTab = selectedTab,
@@ -91,11 +94,12 @@ fun UserPage(
                     )
                 }
 
-                // Using filtered list from ViewModel state
+                // Map the real data list to the custom ItemPostCard component.
                 items(displayedItems) { item ->
                     ItemPostCard(
                         item = item,
-                        // Passing events to ViewModel instead of handling logic in UI
+                        // Use lambdas to pass click events up to the ViewModel.
+                        // Lets the ViewModel handle the logic.
                         onMarkFound = { viewModel.markAsFound(item.id) },
                         onDelete = { viewModel.deletePost(item.id) }
                     )
@@ -151,7 +155,6 @@ fun ProfileInfoCard(user: FirebaseUser?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Placeholder icon, planning to add actual profile image upload later
             Image(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Profile Picture",
@@ -207,7 +210,6 @@ fun TabButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    // Visual feedback for selected tab
     val backgroundColor = if (isSelected) PinPointGreen else Color.White
     val contentColor = if (isSelected) Color.Black else Color.Gray
 
@@ -227,7 +229,7 @@ fun TabButton(
 
 @Composable
 fun ItemPostCard(
-    item: PinPointItem,
+    item: LostItem, // Updated to use real LostItem model
     onMarkFound: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -244,6 +246,7 @@ fun ItemPostCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Bind UI text fields to the actual properties of the LostItem object
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Item Name: ${item.itemName}", fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -251,7 +254,7 @@ fun ItemPostCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Date Posted: ${item.datePosted}", fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "User: ${item.user}", fontSize = 14.sp)
+                    Text(text = "User: ${item.userName}", fontSize = 14.sp)
                 }
 
                 Icon(
@@ -268,7 +271,6 @@ fun ItemPostCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                // Calls lambda function passed from parent composable
                 Button(
                     onClick = onMarkFound,
                     modifier = Modifier.weight(1f),
