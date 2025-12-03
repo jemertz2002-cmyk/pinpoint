@@ -208,8 +208,8 @@ fun UploadPage(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Photo capture section
@@ -390,6 +390,8 @@ fun UploadPage(
             ) {
                 Text("Cancel")
             }
+
+            Spacer(Modifier.height(100.dp))
         }
     }
 }
@@ -451,6 +453,7 @@ fun LocationPickerDialog(
             ) {
                 Text("Cancel")
             }
+
         }
     )
 }

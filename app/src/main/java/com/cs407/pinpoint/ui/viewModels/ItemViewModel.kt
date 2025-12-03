@@ -82,11 +82,11 @@ class ItemViewModel : ViewModel() {
         }
     }
 
-    // Logic for marking an item as found.
-    // Updates local state to remove it from the list instantly.
+
     fun markAsFound(itemId: String) {
-        // Filtering the list triggers a UI recomposition
-        _uiState.value = _uiState.value.filter { it.id != itemId }
+        //  Remove it from the screen immediately
+        val currentList = _uiState.value
+        _uiState.value = currentList.filter { it.id != itemId }
 
         viewModelScope.launch {
             // TODO: Add database call here to update item status in Firestore

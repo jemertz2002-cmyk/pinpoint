@@ -204,5 +204,11 @@ class LostItemRepository {
             }
 
         awaitClose { listener.remove() }
+    //Added this function for the Claim/Mark as Found feature
+    fun deleteItem(itemId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        lostItemsCollection.document(itemId)
+            .delete()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onFailure(e) }
     }
 }
