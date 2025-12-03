@@ -12,9 +12,10 @@ data class LostItem(
     val datePosted: String = "",
     val userName: String = "",
     val imageUrl: String = "",
+    val storagePath: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0
 ) {
     // No-argument constructor for Firebase
-    constructor() : this("", "", "", "", "", "", "", "", "", "", "", 0.0, 0.0)
+    constructor() : this("", "", "", "", "", "", "", "", "", "", "", "", 0.0, 0.0)
 }

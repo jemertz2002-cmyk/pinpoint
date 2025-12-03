@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.theme.BackgroundMint
 import com.cs407.pinpoint.ui.theme.ButtonRed
@@ -55,6 +56,8 @@ fun UserPage(
     // Connects the UI to the database—when the database updates, allItems
     // updates, and the screen redraws automatically.
     val allItems by viewModel.uiState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     var selectedTab by remember { mutableStateOf("Lost") }
 
@@ -94,7 +97,68 @@ fun UserPage(
                     )
                 }
 
-                // Map the real data list to the custom ItemPostCard component.
+                // Show loading indicator
+                if (isLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+
+                // Show error message
+                error?.let { errorMessage ->
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text(
+                                text = errorMessage,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Show empty state
+                if (!isLoading && error == null && displayedItems.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.HelpOutline,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    "No ${selectedTab.lowercase()} items yet",
+                                    color = Color.Gray,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Using filtered list from ViewModel state
                 items(displayedItems) { item ->
                     ItemPostCard(
                         item = item,
@@ -251,18 +315,40 @@ fun ItemPostCard(
                     Text(text = "Item Name: ${item.itemName}", fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Location: ${item.location}", fontSize = 14.sp)
+                    if (item.city.isNotBlank() && item.state.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "City: ${item.city}, ${item.state}", fontSize = 12.sp, color = Color.Gray)
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Date Posted: ${item.datePosted}", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "User: ${item.userName}", fontSize = 14.sp)
                 }
 
-                Icon(
-                    imageVector = Icons.Default.HelpOutline,
-                    contentDescription = "Item Image",
-                    modifier = Modifier.size(80.dp),
-                    tint = Color.LightGray
-                )
+                // Display image from imageUrl
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (item.imageUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = item.imageUrl,
+                            contentDescription = item.itemName,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        // Fallback icon if no image
+                        Icon(
+                            imageVector = Icons.Default.HelpOutline,
+                            contentDescription = "Item Image",
+                            modifier = Modifier.size(48.dp),
+                            tint = Color.LightGray
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
