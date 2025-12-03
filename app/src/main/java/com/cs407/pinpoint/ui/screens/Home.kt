@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +25,8 @@ import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
 import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.viewModels.HomeViewModel
+import coil.compose.AsyncImage
+import androidx.compose.ui.draw.clip
 
 /**
  * Home page composable that displays the main feed of lost items from Firebase.
@@ -414,23 +417,32 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 )
             }
 
-            Column(
-                modifier = Modifier.width(100.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            // Image display
+            Box(
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(88.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.ShoppingCart,
-                    contentDescription = "Lost Item",
-                    modifier = Modifier.size(48.dp),
-                    tint = TextPrimary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    "Image",
-                    fontSize = 10.sp,
-                    color = Color.Gray
-                )
+                if (item.imageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = item.itemName,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Fallback icon if no image
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        contentDescription = "Lost Item",
+                        modifier = Modifier.size(48.dp),
+                        tint = TextPrimary
+                    )
+                }
             }
         }
     }

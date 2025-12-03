@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,43 +31,59 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs407.pinpoint.R
 import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
 import com.cs407.pinpoint.ui.theme.PinPointBackground
+import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
+import com.cs407.pinpoint.ui.viewModels.ItemPageViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.remember
+import coil.compose.AsyncImage
 
 /**
  * Item page composable UI function that creates a structure for displaying an item card
  *
  * args:
- * itemName: A string to display on the topBar
+ * itemId: The ID of the item to display
  * onBack(): A navBack function that gets called on in the navigation back Icon
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemPage(
-    itemName: String = "ITEM NAME HERE",
+    itemId: String,
     onBack: () -> Unit = {},
-    latitude: Double = 43.0731, // Default to Madison, WI
-    longitude: Double = -89.4012
+    viewModel: ItemPageViewModel = viewModel()
 ) {
+    val item by viewModel.item.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    // Load item when composable is first created
+    LaunchedEffect(itemId) {
+        viewModel.loadItem(itemId)
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(itemName, color = TextPrimary) },
+                title = { Text(item?.itemName ?: "Loading...", color = TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -86,19 +103,46 @@ fun ItemPage(
             )
         },
         content = { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .background(PinPointBackground),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                ItemCard(
-                    itemName = itemName,
-                    latitude = latitude,
-                    longitude = longitude
-                )
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PinPointPrimary)
+                    }
+                }
+                error != null -> {
+                    Box(
+                        modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = error ?: "Error loading item",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+                item != null -> {
+                    Column(
+                        modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize()
+                            .background(PinPointBackground),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        ItemCard(
+                            item = item!!
+                        )
+                    }
+                }
             }
         }
     )
@@ -106,22 +150,15 @@ fun ItemPage(
 
 /**
  * ItemCard composable UI function creates an Elevated Card that displays all lost card information
- * pulled from the database. Displays an image from imageRes, and a google maps instance with a marker
+ * pulled from the database. Displays an image from imageUrl, and a google maps instance with a marker
  *
  * args:
- * imageRes: Int = image resource to display or default
- * itemName: String = name to be displayed
- * latitude: Double = needed for LatLong()
- * longitude: Double = needed for LatLong()
+ * item: LostItem = the lost item to display
  */
 @Composable
 fun ItemCard(
-    /* Dynamic name and img URL to make it reusable*/
     modifier: Modifier = Modifier,
-    imageRes: Int = R.drawable.ic_launcher_foreground,
-    itemName: String = "Dynamic Item Name",
-    latitude: Double = 43.0731, // Default to Madison, WI
-    longitude: Double = -89.4012
+    item: com.cs407.pinpoint.domain.models.LostItem
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -143,25 +180,46 @@ fun ItemCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    itemName,
+                    item.itemName,
                     fontSize = 24.sp,
                     modifier = Modifier.padding(0.dp, 8.dp),
                     color = TextPrimary
                 )
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = itemName,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(16.dp, 16.dp)
-                        .size(500.dp, 300.dp)
-                        .border(
-                            width = 1.dp,
-                            color = TextPrimary,
-                            shape = MaterialTheme.shapes.medium // border radius
-                        )
-                )
+                // Display image from imageUrl
+                if (item.imageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = item.itemName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(16.dp, 16.dp)
+                            .height(300.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                width = 1.dp,
+                                color = TextPrimary,
+                                shape = MaterialTheme.shapes.medium
+                            ),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Fallback if no image
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = item.itemName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(16.dp, 16.dp)
+                            .size(500.dp, 300.dp)
+                            .border(
+                                width = 1.dp,
+                                color = TextPrimary,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                    )
+                }
                 Spacer(Modifier.width(16.dp))
             }
             Column(
@@ -189,20 +247,25 @@ fun ItemCard(
                         tint = TextPrimary
                     )
                     Text(
-                        "UserName : default_user",
+                        "UserName: ${item.userName}",
                         fontSize = 16.sp,
                         modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
                         color = TextPrimary
                     )
                 }
                 // Google Map showing where the item was found
-                val itemLocation = remember { LatLng(latitude, longitude) }
+                val itemLocation = remember { 
+                    LatLng(
+                        if (item.latitude != 0.0) item.latitude else 43.0731,
+                        if (item.longitude != 0.0) item.longitude else -89.4012
+                    )
+                }
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(itemLocation, 15f)
                 }
                 
                 Text(
-                    "Location:",
+                    "Location: ${item.location}",
                     fontSize = 16.sp,
                     modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 8.dp),
                     color = TextPrimary

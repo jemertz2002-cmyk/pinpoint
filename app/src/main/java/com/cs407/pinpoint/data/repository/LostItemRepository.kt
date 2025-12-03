@@ -2,6 +2,7 @@ package com.cs407.pinpoint.data.repository
 
 import com.cs407.pinpoint.domain.models.LostItem
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
@@ -16,6 +17,20 @@ class LostItemRepository {
 
     private val lostItemsCollection = Firebase.firestore.collection("lost-items")
     private val auth = Firebase.auth
+
+    /**
+     * Helper function to convert Firestore Timestamp or String to formatted date string
+     */
+    private fun formatDate(dateValue: Any?): String {
+        return when (dateValue) {
+            is Timestamp -> {
+                val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                dateFormat.format(dateValue.toDate())
+            }
+            is String -> dateValue
+            else -> ""
+        }
+    }
 
     fun submitLostItem(lostItem: LostItem): String? {
         var error: String? = null
@@ -67,9 +82,10 @@ class LostItemRepository {
                             additionalInfo = doc.getString("additionalInfo") ?: "",
                             city = doc.getString("city") ?: "",
                             state = doc.getString("state") ?: "",
-                            datePosted = doc.getString("datePosted") ?: "",
+                            datePosted = formatDate(doc.get("datePosted")),
                             userName = doc.getString("userName") ?: "",
                             imageUrl = doc.getString("imageUrl") ?: "",
+                            storagePath = doc.getString("storagePath") ?: "",
                             latitude = doc.getDouble("latitude") ?: 0.0,
                             longitude = doc.getDouble("longitude") ?: 0.0
                         )
@@ -105,9 +121,10 @@ class LostItemRepository {
                             additionalInfo = doc.getString("additionalInfo") ?: "",
                             city = doc.getString("city") ?: "",
                             state = doc.getString("state") ?: "",
-                            datePosted = doc.getString("datePosted") ?: "",
+                            datePosted = formatDate(doc.get("datePosted")),
                             userName = doc.getString("userName") ?: "",
                             imageUrl = doc.getString("imageUrl") ?: "",
+                            storagePath = doc.getString("storagePath") ?: "",
                             latitude = doc.getDouble("latitude") ?: 0.0,
                             longitude = doc.getDouble("longitude") ?: 0.0
                         )
@@ -135,14 +152,57 @@ class LostItemRepository {
                 additionalInfo = doc.getString("additionalInfo") ?: "",
                 city = doc.getString("city") ?: "",
                 state = doc.getString("state") ?: "",
-                datePosted = doc.getString("datePosted") ?: "",
+                datePosted = formatDate(doc.get("datePosted")),
                 userName = doc.getString("userName") ?: "",
                 imageUrl = doc.getString("imageUrl") ?: "",
+                storagePath = doc.getString("storagePath") ?: "",
                 latitude = doc.getDouble("latitude") ?: 0.0,
                 longitude = doc.getDouble("longitude") ?: 0.0
             )
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * Get all items for a specific owner (user)
+     */
+    fun getItemsByOwnerId(ownerId: String): Flow<List<LostItem>> = callbackFlow {
+        val listener = lostItemsCollection
+            .whereEqualTo("ownerId", ownerId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val items = snapshot?.documents?.mapNotNull { doc ->
+                    try {
+                        LostItem(
+                            id = doc.id,
+                            ownerId = doc.getString("ownerId") ?: "",
+                            itemName = doc.getString("itemName") ?: "",
+                            location = doc.getString("location") ?: "",
+                            description = doc.getString("description") ?: "",
+                            additionalInfo = doc.getString("additionalInfo") ?: "",
+                            city = doc.getString("city") ?: "",
+                            state = doc.getString("state") ?: "",
+                            datePosted = formatDate(doc.get("datePosted")),
+                            userName = doc.getString("userName") ?: "",
+                            imageUrl = doc.getString("imageUrl") ?: "",
+                            storagePath = doc.getString("storagePath") ?: "",
+                            latitude = doc.getDouble("latitude") ?: 0.0,
+                            longitude = doc.getDouble("longitude") ?: 0.0
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                } ?: emptyList()
+
+                val sortedItems = items.sortedByDescending { it.datePosted }
+                trySend(sortedItems)
+            }
+
+        awaitClose { listener.remove() }
     }
 }

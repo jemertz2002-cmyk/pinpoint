@@ -53,10 +53,10 @@ fun PinPointApp(
             )
         }
 
-        composable("item_page/{itemName}") { backStackEntry ->
-            val itemName = backStackEntry.arguments?.getString("itemName") ?: "Unknown Item"
+        composable("item_page/{itemId}") { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getString("itemId") ?: ""
             ItemPage(
-                itemName = itemName,
+                itemId = itemId,
                 onBack = { navController.popBackStack() }
             )
         }
