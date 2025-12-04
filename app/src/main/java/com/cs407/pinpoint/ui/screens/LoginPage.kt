@@ -1,6 +1,10 @@
 package com.cs407.pinpoint.ui.screens
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -8,17 +12,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 /**
  * Login page composable that handles user authentication.
  *
  * Displays a login form with email and password fields, validates user input,
- * and authenticates users through Firebase Authentication. Includes error handling,
- * loading states, and navigation to other screens.
+ * and authenticates users through Firebase Authentication. Includes Google Sign-In,
+ * error handling, loading states, and navigation to other screens.
  *
  * @param onSuccess Callback function invoked when user successfully logs in
  * @param onNavigateToSignUp Callback function to navigate to the sign-up page
@@ -31,6 +43,8 @@ fun LoginPage(
     onBack: () -> Unit = {}
 ) {
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -44,6 +58,45 @@ fun LoginPage(
      */
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    // Google Sign-In configuration
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("1076119988683-klepr015fnaleihffv98vhnfvj7lnpto.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+    }
+
+    val googleSignInClient = remember {
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    // Google Sign-In launcher
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+                isLoading = true
+                auth.signInWithCredential(credential)
+                    .addOnSuccessListener {
+                        isLoading = false
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        isLoading = false
+                        error = e.message ?: "Google Sign-In failed"
+                    }
+            } catch (e: ApiException) {
+                isLoading = false
+                error = "Google Sign-In failed: ${e.message}"
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -69,6 +122,40 @@ fun LoginPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Login to PinPoint", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(16.dp))
+
+            // Google Sign-In Button
+            OutlinedButton(
+                onClick = {
+                    val signInIntent = googleSignInClient.signInIntent
+                    googleSignInLauncher.launch(signInIntent)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("G", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4285F4))
+                Spacer(Modifier.width(8.dp))
+                Text("Continue with Google", color = Color.Black)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Divider with "OR"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(modifier = Modifier.weight(1f))
+                Text(
+                    "OR",
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f))
+            }
+
             Spacer(Modifier.height(16.dp))
 
             // Email input field with validation
