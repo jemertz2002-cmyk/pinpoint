@@ -227,20 +227,24 @@ fun ItemCard(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ){
-                Row(){
-                    Icon(
-                        Icons.Default.Phone,
-                        contentDescription = "Phone Icon",
-                        tint = TextPrimary
-                    )
-                    Text(
-                        "Contact Information: (Phone or Email)",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
-                        color = TextPrimary
-                    )
+                // Only show contact info if it's been given
+                if (!item.contactInfo.isBlank()) {
+                    Row {
+                        Icon(
+                            Icons.Default.Phone,
+                            contentDescription = "Phone Icon",
+                            tint = TextPrimary
+                        )
+                        Text(
+                            "Contact Information: ${item.contactInfo}",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                            color = TextPrimary
+                        )
+                    }
                 }
-                Row(){
+
+                Row{
                     Icon(
                         Icons.Default.AccountBox,
                         contentDescription ="User Name",
