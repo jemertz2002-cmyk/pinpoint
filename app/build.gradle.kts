@@ -9,9 +9,7 @@ plugins {
 
 android {
     namespace = "com.cs407.pinpoint"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.cs407.pinpoint"
@@ -65,11 +63,20 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Dependencies for Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
+    // Firebase BOM - Use only ONE version
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+
+    // Firebase dependencies (versions managed by BOM) - Use -ktx versions
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // Coroutines for Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // For Google Maps
     val mapsComposeVersion = "4.4.1"
@@ -86,9 +93,4 @@ dependencies {
 
     // Used for keeping track of camera file
     implementation("io.coil-kt:coil-compose:2.5.0")
-
-    // Extra Icons
-    implementation("androidx.compose.material:material-icons-extended")
-
-
 }
