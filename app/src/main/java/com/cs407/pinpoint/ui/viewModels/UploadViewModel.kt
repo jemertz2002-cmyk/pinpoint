@@ -88,7 +88,7 @@ class UploadViewModel : ViewModel() {
                 )
 
                 result.fold(
-                    onSuccess = { itemId ->
+                    onSuccess = { _ ->
                         _uiState.value = _uiState.value.copy(
                             isUploading = false,
                             successMsg = "Successfully created lost item!",

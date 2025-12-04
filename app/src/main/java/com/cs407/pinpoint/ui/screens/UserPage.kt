@@ -26,12 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.cs407.pinpoint.ui.viewModels.PinPointItem
 import com.cs407.pinpoint.ui.theme.BackgroundMint
 import com.cs407.pinpoint.ui.theme.ButtonRed
 import com.cs407.pinpoint.ui.theme.PinPointGreen
 import com.cs407.pinpoint.ui.theme.PinPointGreenLight
 import com.cs407.pinpoint.ui.viewModels.ItemViewModel
+import com.cs407.pinpoint.ui.viewModels.PinPointItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -64,7 +64,14 @@ fun UserPage(
     // Filters the list based on the selected tab ("Lost" vs "Found").
     // Since the current database schema doesn't have a "type" field yet,
     // this currently shows all items, but the logic is ready for that field.
-    val displayedItems = allItems
+    // -> now actually using the status field on each item
+    val displayedItems = remember(allItems, selectedTab) {
+        when (selectedTab) {
+            "Lost" -> allItems.filter { it.status == "Lost" }
+            "Found" -> allItems.filter { it.status == "Found" }
+            else -> allItems
+        }
+    }
 
     Surface(
         color = BackgroundMint,
@@ -293,10 +300,12 @@ fun TabButton(
 
 @Composable
 fun ItemPostCard(
-    item: PinPointItem, // UI model from ItemViewModel
+    item: PinPointItem, // Updated to use PinPointItem model from the ViewModel
     onMarkFound: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val isFound = item.status == "Found"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -310,14 +319,26 @@ fun ItemPostCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Bind UI text fields to the actual properties of the LostItem object
+                // Bind UI text fields to the actual properties of the PinPointItem object
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Item Name: ${item.itemName}", fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Location: ${item.location}", fontSize = 14.sp)
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Status: ${item.status}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+
                     if (item.city.isNotBlank() && item.state.isNotBlank()) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "City: ${item.city}, ${item.state}", fontSize = 12.sp, color = Color.Gray)
+                        Text(
+                            text = "City: ${item.city}, ${item.state}",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Date Posted: ${item.datePosted}", fontSize = 14.sp)
@@ -361,12 +382,13 @@ fun ItemPostCard(
                     onClick = onMarkFound,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
+                    enabled = !isFound,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PinPointGreen,
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Mark as Found")
+                    Text(text = if (isFound) "Found" else "Mark as Found")
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))

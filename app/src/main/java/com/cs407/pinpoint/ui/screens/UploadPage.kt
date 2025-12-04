@@ -85,6 +85,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun UploadPage(
     onBack: () -> Unit = {},
+    onUploadSuccess: () -> Unit = {},
     viewModel: UploadViewModel = viewModel()
 ) {
     var itemName by remember { mutableStateOf("") }
@@ -185,6 +186,8 @@ fun UploadPage(
             selectedState = "Wisconsin"
             description = ""
             photoUri = null
+
+            onUploadSuccess()
         }
     }
 
