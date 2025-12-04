@@ -17,7 +17,7 @@ data class PinPointItem(
     val location: String,
     val datePosted: String,
     val user: String, // The username or email of the person who posted it
-    val status: String,  // Used to filter between Lost and Found tabs
+    val type: String,  // Used to filter between Lost and Found tabs
     val imageUrl: String = "", // Image URL from Firebase Storage
     val city: String = "",
     val state: String = "",
@@ -62,7 +62,11 @@ class ItemViewModel : ViewModel() {
                             location = lostItem.location,
                             datePosted = lostItem.datePosted,
                             user = lostItem.userName,
-                            status = if (lostItem.status.isBlank()) "Lost" else lostItem.status,
+                            type = if (lostItem.status.equals("found", ignoreCase = true)) {
+                                "Found"
+                            } else {
+                                "Lost"
+                            },
                             imageUrl = lostItem.imageUrl,
                             city = lostItem.city,
                             state = lostItem.state,
@@ -81,14 +85,25 @@ class ItemViewModel : ViewModel() {
     }
 
     fun markAsFound(itemId: String) {
-        //  Remove it from the screen immediately
-        _uiState.value = _uiState.value.map { item ->
-            if (item.id == itemId) item.copy(status = "Found") else item
-        }
-
         viewModelScope.launch {
+            _error.value = null
             try {
-                repository.updateItemStatus(itemId, "Found")
+                val result = repository.updateStatus(itemId, "found")
+                result.fold(
+                    onSuccess = {
+                        // Update the local list so the item moves from Lost -> Found tab
+                        _uiState.value = _uiState.value.map { item ->
+                            if (item.id == itemId) {
+                                item.copy(type = "Found")
+                            } else {
+                                item
+                            }
+                        }
+                    },
+                    onFailure = { exception ->
+                        _error.value = exception.message ?: "Failed to mark item as found"
+                    }
+                )
             } catch (e: Exception) {
                 _error.value = e.message ?: "Failed to mark item as found"
             }
@@ -110,7 +125,6 @@ class ItemViewModel : ViewModel() {
                     _error.value = null
                 },
                 onFailure = { exception ->
-                    // Revert UI change on error
                     _error.value = exception.message ?: "Failed to delete item"
                 }
             )

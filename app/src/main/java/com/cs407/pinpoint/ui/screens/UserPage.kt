@@ -61,16 +61,11 @@ fun UserPage(
 
     var selectedTab by remember { mutableStateOf("Lost") }
 
-    // Filters the list based on the selected tab ("Lost" vs "Found").
-    // Since the current database schema doesn't have a "type" field yet,
-    // this currently shows all items, but the logic is ready for that field.
-    // -> now actually using the status field on each item
-    val displayedItems = remember(allItems, selectedTab) {
-        when (selectedTab) {
-            "Lost" -> allItems.filter { it.status == "Lost" }
-            "Found" -> allItems.filter { it.status == "Found" }
-            else -> allItems
-        }
+    // Filter items based on selected tab
+    val displayedItems = when (selectedTab) {
+        "Lost" -> allItems.filter { it.type == "Lost" }
+        "Found" -> allItems.filter { it.type == "Found" }
+        else -> allItems
     }
 
     Surface(
@@ -304,7 +299,7 @@ fun ItemPostCard(
     onMarkFound: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isFound = item.status == "Found"
+    val isFound = item.type == "Found"
 
     Card(
         modifier = Modifier
@@ -319,7 +314,6 @@ fun ItemPostCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Bind UI text fields to the actual properties of the PinPointItem object
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "Item Name: ${item.itemName}", fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -327,7 +321,7 @@ fun ItemPostCard(
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Status: ${item.status}",
+                        text = "Status: ${item.type}",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
