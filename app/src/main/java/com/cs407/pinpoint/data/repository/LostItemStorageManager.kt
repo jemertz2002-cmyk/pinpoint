@@ -57,7 +57,8 @@ class LostItemStorageManager {
                 "ownerId" to userId,
                 "userName" to (auth.currentUser?.displayName ?: "Unknown"),
                 "datePosted" to Timestamp.now(),
-                "additionalInfo" to ""
+                "additionalInfo" to "",
+                "status" to "Lost"
             )
 
             firestore.collection("lost-items")

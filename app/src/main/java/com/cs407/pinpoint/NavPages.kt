@@ -44,8 +44,8 @@ fun PinPointApp(
         }
         composable("home") {
             HomePage(
-                onNavigateToItem = { itemName ->
-                    navController.navigate("item_page/$itemName")
+                onNavigateToItem = { itemId ->
+                    navController.navigate("item_page/$itemId")
                 },
                 onNavigateToUser = { navController.navigate("user_page") },
                 onNavigateToUpload = { navController.navigate("upload_page") },
@@ -68,9 +68,16 @@ fun PinPointApp(
         }
         composable("upload_page") {
             UploadPage(
-                onBack = {navController.popBackStack()}
+                onBack = { navController.popBackStack() },
+                onUploadSuccess = {
+                    // navigate back to home after a successful upload
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = false }
+                    }
+                }
             )
         }
+
         composable("settings") {
             SettingsPage(
                 onBack = { navController.popBackStack() },

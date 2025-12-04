@@ -48,6 +48,7 @@ class LostItemRepository {
             "additionalInfo" to lostItem.additionalInfo,
             "city" to lostItem.city,
             "state" to lostItem.state,
+            "status" to (lostItem.status.ifBlank { "Lost" }),
             "datePosted" to currentDate,
             "userName" to userName,
             "imageUrl" to lostItem.imageUrl,
@@ -82,6 +83,7 @@ class LostItemRepository {
                             additionalInfo = doc.getString("additionalInfo") ?: "",
                             city = doc.getString("city") ?: "",
                             state = doc.getString("state") ?: "",
+                            status = doc.getString("status") ?: "Lost",
                             datePosted = formatDate(doc.get("datePosted")),
                             userName = doc.getString("userName") ?: "",
                             imageUrl = doc.getString("imageUrl") ?: "",
@@ -121,6 +123,7 @@ class LostItemRepository {
                             additionalInfo = doc.getString("additionalInfo") ?: "",
                             city = doc.getString("city") ?: "",
                             state = doc.getString("state") ?: "",
+                            status = doc.getString("status") ?: "Lost",
                             datePosted = formatDate(doc.get("datePosted")),
                             userName = doc.getString("userName") ?: "",
                             imageUrl = doc.getString("imageUrl") ?: "",
@@ -152,6 +155,7 @@ class LostItemRepository {
                 additionalInfo = doc.getString("additionalInfo") ?: "",
                 city = doc.getString("city") ?: "",
                 state = doc.getString("state") ?: "",
+                status = doc.getString("status") ?: "Lost",
                 datePosted = formatDate(doc.get("datePosted")),
                 userName = doc.getString("userName") ?: "",
                 imageUrl = doc.getString("imageUrl") ?: "",
@@ -163,6 +167,7 @@ class LostItemRepository {
             null
         }
     }
+
     /**
      * Get all items for a specific owner (user)
      */
@@ -186,6 +191,7 @@ class LostItemRepository {
                             additionalInfo = doc.getString("additionalInfo") ?: "",
                             city = doc.getString("city") ?: "",
                             state = doc.getString("state") ?: "",
+                            status = doc.getString("status") ?: "Lost",
                             datePosted = formatDate(doc.get("datePosted")),
                             userName = doc.getString("userName") ?: "",
                             imageUrl = doc.getString("imageUrl") ?: "",
@@ -205,11 +211,18 @@ class LostItemRepository {
         awaitClose { listener.remove() }
     }
 
-    // Added this function for the Claim/Mark as Found feature
+    //Added this function for the Claim/Mark as Found feature
     fun deleteItem(itemId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         lostItemsCollection.document(itemId)
             .delete()
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { e -> onFailure(e) }
+    }
+
+    suspend fun updateItemStatus(itemId: String, newStatus: String) {
+        lostItemsCollection
+            .document(itemId)
+            .update("status", newStatus)
+            .await()
     }
 }

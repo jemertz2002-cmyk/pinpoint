@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cs407.pinpoint.data.repository.LostItemRepository
 import com.cs407.pinpoint.data.repository.LostItemStorageManager
-import com.cs407.pinpoint.domain.models.LostItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +17,7 @@ data class PinPointItem(
     val location: String,
     val datePosted: String,
     val user: String, // The username or email of the person who posted it
-    val type: String,  // Used to filter between Lost and Found tabs
+    val status: String,  // Used to filter between Lost and Found tabs
     val imageUrl: String = "", // Image URL from Firebase Storage
     val city: String = "",
     val state: String = "",
@@ -56,7 +55,6 @@ class ItemViewModel : ViewModel() {
             try {
                 repository.getItemsByOwnerId(ownerId).collect { lostItems ->
                     // Convert LostItem to PinPointItem
-                    // Note: Currently all items are "Lost" type since we don't have a "Found" status yet
                     val pinPointItems = lostItems.map { lostItem ->
                         PinPointItem(
                             id = lostItem.id,
@@ -64,7 +62,7 @@ class ItemViewModel : ViewModel() {
                             location = lostItem.location,
                             datePosted = lostItem.datePosted,
                             user = lostItem.userName,
-                            type = "Lost", // All items are currently "Lost" type
+                            status = if (lostItem.status.isBlank()) "Lost" else lostItem.status,
                             imageUrl = lostItem.imageUrl,
                             city = lostItem.city,
                             state = lostItem.state,
@@ -82,14 +80,18 @@ class ItemViewModel : ViewModel() {
         }
     }
 
-
     fun markAsFound(itemId: String) {
         //  Remove it from the screen immediately
-        val currentList = _uiState.value
-        _uiState.value = currentList.filter { it.id != itemId }
+        _uiState.value = _uiState.value.map { item ->
+            if (item.id == itemId) item.copy(status = "Found") else item
+        }
 
         viewModelScope.launch {
-            // TODO: Add database call here to update item status in Firestore
+            try {
+                repository.updateItemStatus(itemId, "Found")
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Failed to mark item as found"
+            }
         }
     }
 
@@ -109,7 +111,6 @@ class ItemViewModel : ViewModel() {
                 },
                 onFailure = { exception ->
                     // Revert UI change on error
-                    // Note: In a real app, you'd want to reload from database
                     _error.value = exception.message ?: "Failed to delete item"
                 }
             )

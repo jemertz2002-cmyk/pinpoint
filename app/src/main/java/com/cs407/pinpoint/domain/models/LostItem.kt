@@ -9,6 +9,7 @@ data class LostItem(
     val additionalInfo: String = "",
     val city: String = "",
     val state: String = "",
+    val status: String = "Lost",
     val datePosted: String = "",
     val userName: String = "",
     val imageUrl: String = "",
@@ -17,5 +18,21 @@ data class LostItem(
     val longitude: Double = 0.0
 ) {
     // No-argument constructor for Firebase
-    constructor() : this("", "", "", "", "", "", "", "", "", "", "", "", 0.0, 0.0)
+    constructor() : this(
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Lost",
+        "",
+        "",
+        "",
+        "",
+        0.0,
+        0.0
+    )
 }
