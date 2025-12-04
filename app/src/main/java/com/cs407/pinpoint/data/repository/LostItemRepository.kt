@@ -225,4 +225,17 @@ class LostItemRepository {
             .update("status", newStatus)
             .await()
     }
+    suspend fun updateStatus(itemId: String, status: String): Result<Unit> {
+        return try {
+            lostItemsCollection
+                .document(itemId)
+                .update("status", status)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 }

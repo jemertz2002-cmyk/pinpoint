@@ -330,6 +330,7 @@ fun HomePage(
 
                 // Show items list
                 if (!isLoading && error == null) {
+                    val visibleItems = items.filter { !it.status.equals("found", ignoreCase = true) }
                     if (items.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -360,10 +361,11 @@ fun HomePage(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(items) { item ->
+                            items(visibleItems) { item ->
                                 LostItemCard(item, onClick = { onNavigateToItem(item.id) })
                             }
                         }
+
                     }
                 }
             }
