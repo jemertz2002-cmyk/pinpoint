@@ -281,7 +281,6 @@ fun HomePage(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         ) { paddingValues ->

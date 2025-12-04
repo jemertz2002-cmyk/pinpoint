@@ -8,13 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
@@ -53,6 +56,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.remember
 import coil.compose.AsyncImage
@@ -133,7 +138,6 @@ fun ItemPage(
                     Column(
                         modifier = Modifier
                             .padding(padding)
-                            .fillMaxSize()
                             .background(PinPointBackground),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -163,13 +167,12 @@ fun ItemCard(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .wrapContentHeight()
             .padding(16.dp)
     ) {
         ElevatedCard(
-            modifier = Modifier
-                .wrapContentHeight()
-                .padding(24.dp),
+            modifier = Modifier.padding(24.dp),
             shape = MaterialTheme.shapes.extraLarge,
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(
@@ -224,26 +227,32 @@ fun ItemCard(
             }
             Column(
                 modifier = Modifier
-                    .padding(16.dp),
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 0.dp),
                 horizontalAlignment = Alignment.Start
-            ){
-                Row(){
-                    Icon(
-                        Icons.Default.Phone,
-                        contentDescription = "Phone Icon",
-                        tint = TextPrimary
-                    )
-                    Text(
-                        "Contact Information: (Phone or Email)",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
-                        color = TextPrimary
-                    )
+            ) {
+                // Only show contact info if it's been given
+                if (!item.contactInfo.isBlank()) {
+                    Row {
+                        Icon(
+                            Icons.Default.Phone,
+                            contentDescription = "Phone Icon",
+                            tint = TextPrimary
+                        )
+                        Text(
+                            "Contact Information: ${item.contactInfo}",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                            color = TextPrimary
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                Row(){
+
+                Row {
                     Icon(
                         Icons.Default.AccountBox,
-                        contentDescription ="User Name",
+                        contentDescription = "User Name",
                         tint = TextPrimary
                     )
                     Text(
@@ -253,6 +262,30 @@ fun ItemCard(
                         color = TextPrimary
                     )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    Icon(
+                        Icons.Default.Description,
+                        contentDescription = "Description of Item",
+                        tint = TextPrimary
+                    )
+                    Text(
+                        "Description: ${item.description}",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(8.dp, 0.dp, 0.dp, 0.dp),
+                        color = TextPrimary
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 16.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+
                 // Google Map showing where the item was found
                 val itemLocation = remember { 
                     LatLng(
@@ -260,6 +293,7 @@ fun ItemCard(
                         if (item.longitude != 0.0) item.longitude else -89.4012
                     )
                 }
+
                 val cameraPositionState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(itemLocation, 15f)
                 }
@@ -273,11 +307,11 @@ fun ItemCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .heightIn(min = 300.dp)
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.matchParentSize(),
                         cameraPositionState = cameraPositionState,
                         uiSettings = MapUiSettings(
                             zoomControlsEnabled = true,

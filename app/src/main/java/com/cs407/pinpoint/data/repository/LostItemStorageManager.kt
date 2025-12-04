@@ -26,7 +26,8 @@ class LostItemStorageManager {
         state: String,
         location: String,
         latitude: Double,
-        longitude: Double
+        longitude: Double,
+        contactInfo: String
     ): Result<String> {
         return try {
             val userId = auth.currentUser?.uid
@@ -58,7 +59,8 @@ class LostItemStorageManager {
                 "userName" to (auth.currentUser?.displayName ?: "Unknown"),
                 "datePosted" to Timestamp.now(),
                 "additionalInfo" to "",
-                "status" to "Lost"
+                "status" to "Lost",
+                "contactInfo" to contactInfo
             )
 
             firestore.collection("lost-items")

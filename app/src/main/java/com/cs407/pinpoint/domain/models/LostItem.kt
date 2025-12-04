@@ -15,7 +15,8 @@ data class LostItem(
     val imageUrl: String = "",
     val storagePath: String = "",
     val latitude: Double = 0.0,
-    val longitude: Double = 0.0
+    val longitude: Double = 0.0,
+    val contactInfo: String = "N/A"
 ) {
     // No-argument constructor for Firebase
     constructor() : this(

@@ -89,7 +89,8 @@ class LostItemRepository {
                             imageUrl = doc.getString("imageUrl") ?: "",
                             storagePath = doc.getString("storagePath") ?: "",
                             latitude = doc.getDouble("latitude") ?: 0.0,
-                            longitude = doc.getDouble("longitude") ?: 0.0
+                            longitude = doc.getDouble("longitude") ?: 0.0,
+                            contactInfo = doc.getString("contactInfo") ?: ""
                         )
                     } catch (e: Exception) {
                         null
@@ -129,7 +130,8 @@ class LostItemRepository {
                             imageUrl = doc.getString("imageUrl") ?: "",
                             storagePath = doc.getString("storagePath") ?: "",
                             latitude = doc.getDouble("latitude") ?: 0.0,
-                            longitude = doc.getDouble("longitude") ?: 0.0
+                            longitude = doc.getDouble("longitude") ?: 0.0,
+                            contactInfo = doc.getString("contactInfo") ?: ""
                         )
                     } catch (e: Exception) {
                         null
@@ -161,7 +163,8 @@ class LostItemRepository {
                 imageUrl = doc.getString("imageUrl") ?: "",
                 storagePath = doc.getString("storagePath") ?: "",
                 latitude = doc.getDouble("latitude") ?: 0.0,
-                longitude = doc.getDouble("longitude") ?: 0.0
+                longitude = doc.getDouble("longitude") ?: 0.0,
+                contactInfo = doc.getString("contactInfo") ?: ""
             )
         } catch (e: Exception) {
             null
@@ -197,7 +200,8 @@ class LostItemRepository {
                             imageUrl = doc.getString("imageUrl") ?: "",
                             storagePath = doc.getString("storagePath") ?: "",
                             latitude = doc.getDouble("latitude") ?: 0.0,
-                            longitude = doc.getDouble("longitude") ?: 0.0
+                            longitude = doc.getDouble("longitude") ?: 0.0,
+                            contactInfo = doc.getString("contactInfo") ?: ""
                         )
                     } catch (e: Exception) {
                         null

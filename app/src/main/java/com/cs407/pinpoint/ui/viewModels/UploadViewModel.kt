@@ -38,7 +38,8 @@ class UploadViewModel : ViewModel() {
         state: String,
         location: String,
         latitude: Double,
-        longitude: Double
+        longitude: Double,
+        contactInfo: String,
     ) {
         // Validate required fields
         if (itemName.isBlank() ||
@@ -84,7 +85,8 @@ class UploadViewModel : ViewModel() {
                     state = state,
                     location = location,
                     latitude = latitude,
-                    longitude = longitude
+                    longitude = longitude,
+                    contactInfo = contactInfo
                 )
 
                 result.fold(

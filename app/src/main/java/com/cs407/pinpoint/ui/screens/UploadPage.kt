@@ -93,6 +93,7 @@ fun UploadPage(
     var city by remember { mutableStateOf("") }
     var selectedState by remember { mutableStateOf("Wisconsin") }
     var stateExpanded by remember { mutableStateOf(false) }
+    var contactInfo by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,7 +104,6 @@ fun UploadPage(
 
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-    val user = Firebase.auth.currentUser
 
     // US States list
     val states = listOf(
@@ -154,7 +154,8 @@ fun UploadPage(
             state = selectedState,
             location = location,
             latitude = selectedLocation?.latitude ?: 0.0,
-            longitude = selectedLocation?.longitude ?: 0.0
+            longitude = selectedLocation?.longitude ?: 0.0,
+            contactInfo = contactInfo
         )
     }
 
@@ -340,6 +341,16 @@ fun UploadPage(
                 }
             }
             Spacer(Modifier.height(12.dp))
+
+            // Contact Info
+            OutlinedTextField(
+                value = contactInfo,
+                onValueChange = { contactInfo = it },
+                label = { Text("Contact Info *") },
+                placeholder = { Text("eg., phone, email, etc") },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(24.dp))
 
             // Description (combined description and additional info)
             OutlinedTextField(
