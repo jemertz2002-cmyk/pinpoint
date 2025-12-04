@@ -43,13 +43,14 @@ import com.google.firebase.auth.FirebaseAuth
 fun SettingsPage(
     onBack: () -> Unit,
     onSignOut: () -> Unit = {},
-    onDeleteAccount: () -> Unit = {}
+    onDeleteAccount: () -> Unit = {},
+    onDarkThemeToggle: (Boolean) -> Unit,
+    darkTheme: Boolean
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
 
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -98,8 +99,8 @@ fun SettingsPage(
 
             SettingSwitchRow(
                 title = "Dark Mode",
-                checked = darkModeEnabled,
-                onCheckedChange = { darkModeEnabled = it }
+                checked = darkTheme,
+                onCheckedChange = onDarkThemeToggle
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Color(0xFFE0E0E0))

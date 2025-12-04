@@ -16,6 +16,8 @@ import com.cs407.pinpoint.ui.screens.UserPage
 
 @Composable
 fun PinPointApp(
+    darkTheme: Boolean,
+    onDarkThemeToggle: (Boolean) -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -77,7 +79,6 @@ fun PinPointApp(
                 }
             )
         }
-
         composable("settings") {
             SettingsPage(
                 onBack = { navController.popBackStack() },
@@ -90,7 +91,9 @@ fun PinPointApp(
                     navController.navigate("landing") {
                         popUpTo("landing") { inclusive = true }
                     }
-                }
+                },
+                onDarkThemeToggle = onDarkThemeToggle,
+                darkTheme = darkTheme
             )
         }
     }

@@ -57,7 +57,7 @@ fun LoginPage(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back to Landing",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -166,7 +166,7 @@ fun LoginPage(
             ) {
                 Text(
                     text = "Don't have an account? Sign Up",
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
