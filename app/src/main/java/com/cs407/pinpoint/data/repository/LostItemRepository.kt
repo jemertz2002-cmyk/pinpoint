@@ -163,7 +163,6 @@ class LostItemRepository {
             null
         }
     }
-
     /**
      * Get all items for a specific owner (user)
      */
@@ -204,7 +203,9 @@ class LostItemRepository {
             }
 
         awaitClose { listener.remove() }
-    //Added this function for the Claim/Mark as Found feature
+    }
+
+    // Added this function for the Claim/Mark as Found feature
     fun deleteItem(itemId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         lostItemsCollection.document(itemId)
             .delete()

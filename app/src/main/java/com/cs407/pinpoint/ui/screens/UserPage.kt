@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.cs407.pinpoint.domain.models.LostItem
+import com.cs407.pinpoint.ui.viewModels.PinPointItem
 import com.cs407.pinpoint.ui.theme.BackgroundMint
 import com.cs407.pinpoint.ui.theme.ButtonRed
 import com.cs407.pinpoint.ui.theme.PinPointGreen
@@ -293,7 +293,7 @@ fun TabButton(
 
 @Composable
 fun ItemPostCard(
-    item: LostItem, // Updated to use real LostItem model
+    item: PinPointItem, // UI model from ItemViewModel
     onMarkFound: () -> Unit,
     onDelete: () -> Unit
 ) {
