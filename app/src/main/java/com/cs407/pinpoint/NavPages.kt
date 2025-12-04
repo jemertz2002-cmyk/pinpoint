@@ -22,7 +22,7 @@ fun PinPointApp(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = "landing",
     ) {
         composable("landing") {
             LandingPage(
