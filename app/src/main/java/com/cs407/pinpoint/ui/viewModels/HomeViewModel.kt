@@ -70,4 +70,29 @@ class HomeViewModel : ViewModel() {
     fun refresh() {
         loadAllItems()
     }
+
+    // "Near Me" – for now hardcoded to Madison, Wisconsin
+    fun loadNearbyItems() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            try {
+                // Treat "near me" as Madison, Wisconsin for now
+                val nearbyState = "Wisconsin"
+                val nearbyCity = "Madison"
+
+                repository.getItemsByState(nearbyState).collect { itemsList ->
+                    val filtered = itemsList.filter {
+                        it.city.trim().equals(nearbyCity, ignoreCase = true)
+                    }
+                    _items.value = filtered
+                    _isLoading.value = false
+                }
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Failed to load nearby items"
+                _isLoading.value = false
+            }
+        }
+    }
 }
