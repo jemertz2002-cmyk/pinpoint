@@ -3,7 +3,6 @@ package com.cs407.pinpoint.ui.screens
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,14 +42,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cs407.pinpoint.R
 import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.firestore
 
 /**
  * Sign up page composable that handles new user registration.
@@ -70,6 +71,7 @@ fun SignUpPage(
     onBack: () -> Unit = {}
 ) {
     val auth = FirebaseAuth.getInstance()
+    val firestore = Firebase.firestore
     val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
@@ -82,7 +84,7 @@ fun SignUpPage(
     // Google Sign-In configuration
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("1076119988683-klepr015fnaleihffv98vhnfvj7lnpto.apps.googleusercontent.com") // Replace with your Web Client ID from google-services.json
+            .requestIdToken("1076119988683-klepr015fnaleihffv98vhnfvj7lnpto.apps.googleusercontent.com")
             .requestEmail()
             .build()
     }
@@ -103,9 +105,33 @@ fun SignUpPage(
 
                 isLoading = true
                 auth.signInWithCredential(credential)
-                    .addOnSuccessListener {
-                        isLoading = false
-                        onSuccess()
+                    .addOnSuccessListener { authResult ->
+                        val user = authResult.user
+                        if (user != null) {
+                            // Create user document in Firestore
+                            val userDoc = hashMapOf(
+                                "uid" to user.uid,
+                                "email" to user.email,
+                                "displayName" to (user.displayName ?: account.displayName),
+                                "createdAt" to Timestamp.now(),
+                                "isActive" to true
+                            )
+
+                            firestore.collection("users")
+                                .document(user.uid)
+                                .set(userDoc)
+                                .addOnSuccessListener {
+                                    isLoading = false
+                                    onSuccess()
+                                }
+                                .addOnFailureListener { e ->
+                                    isLoading = false
+                                    error = "Failed to create user profile: ${e.message}"
+                                }
+                        } else {
+                            isLoading = false
+                            error = "Failed to get user information"
+                        }
                     }
                     .addOnFailureListener { e ->
                         isLoading = false
@@ -115,6 +141,8 @@ fun SignUpPage(
                 isLoading = false
                 error = "Google Sign-In failed: ${e.message}"
             }
+        } else {
+            isLoading = false
         }
     }
 
@@ -146,8 +174,11 @@ fun SignUpPage(
             // Google Sign-In Button
             OutlinedButton(
                 onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    googleSignInLauncher.launch(signInIntent)
+                    // Sign out first to force account picker
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading,
@@ -240,16 +271,35 @@ fun SignUpPage(
                             // Create new Firebase Authentication user
                             auth.createUserWithEmailAndPassword(email, password)
                                 .addOnSuccessListener { authResult ->
+                                    val user = authResult.user
+
                                     // Store username in Firebase user profile
                                     val profileUpdates = UserProfileChangeRequest.Builder()
                                         .setDisplayName(username)
                                         .build()
 
-                                    authResult.user?.updateProfile(profileUpdates)
+                                    user?.updateProfile(profileUpdates)
                                         ?.addOnSuccessListener {
-                                            // Firebase automatically persists the session
-                                            isLoading = false
-                                            onSuccess()
+                                            // Create user document in Firestore
+                                            val userDoc = hashMapOf(
+                                                "uid" to user.uid,
+                                                "email" to user.email,
+                                                "displayName" to username,
+                                                "createdAt" to Timestamp.now(),
+                                                "isActive" to true
+                                            )
+
+                                            firestore.collection("users")
+                                                .document(user.uid)
+                                                .set(userDoc)
+                                                .addOnSuccessListener {
+                                                    isLoading = false
+                                                    onSuccess()
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    isLoading = false
+                                                    error = "Failed to create user profile: ${e.message}"
+                                                }
                                         }
                                         ?.addOnFailureListener { e ->
                                             isLoading = false

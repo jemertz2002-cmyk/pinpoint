@@ -11,35 +11,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
-import com.cs407.pinpoint.ui.theme.PinPointPrimary
+import coil.compose.AsyncImage
+import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.theme.PinPointGreenAccent
+import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.cs407.pinpoint.ui.theme.PinPointSecondary
 import com.cs407.pinpoint.ui.theme.PinPointSurface
 import com.cs407.pinpoint.ui.theme.TextPrimary
-import com.cs407.pinpoint.domain.models.LostItem
 import com.cs407.pinpoint.ui.viewModels.HomeViewModel
-import coil.compose.AsyncImage
-import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.launch
 
-/**
- * Home page composable that displays the main feed of lost items from Firebase.
- *
- * Shows a navigation drawer, location filtering with city text input and state dropdown,
- * and a list of lost items fetched from Firestore in real-time.
- *
- * @param onNavigateToItem Callback to navigate to item details page
- * @param onNavigateToUser Callback to navigate to user profile page
- * @param onNavigateToUpload Callback to navigate to upload page
- * @param onNavigateToSettings Callback to navigate to settings page
- * @param viewModel ViewModel for managing lost items data
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
@@ -58,9 +46,10 @@ fun HomePage(
     val error by viewModel.error.collectAsState()
 
     // Location states
-    var cityInput by remember { mutableStateOf("Madison") }
+    var cityInput by remember { mutableStateOf("") }
     var selectedState by remember { mutableStateOf("Wisconsin") }
     var stateExpanded by remember { mutableStateOf(false) }
+    var isNearbyMode by remember { mutableStateOf(false) }
 
     // US States list
     val states = listOf(
@@ -89,15 +78,17 @@ fun HomePage(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
-                HorizontalDivider(Modifier.padding(16.dp), DividerDefaults.Thickness, DividerDefaults.color)
+                HorizontalDivider(
+                    Modifier.padding(16.dp),
+                    DividerDefaults.Thickness,
+                    DividerDefaults.color
+                )
 
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home Page Navigation Button") },
                     label = { Text("Home") },
                     selected = true,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    },
+                    onClick = { scope.launch { drawerState.close() } },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
 
@@ -176,7 +167,7 @@ fun HomePage(
                         }
                     }
 
-                    // Location selection: City text field + State dropdown
+                    // Location selection: City text field + State dropdown + buttons
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = PinPointSecondary
@@ -186,14 +177,15 @@ fun HomePage(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             // City Text Field
                             TextField(
                                 value = cityInput,
                                 onValueChange = { cityInput = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = { Text("City", fontSize = 12.sp, color = Color.Gray) },
+                                modifier = Modifier
+                                    .weight(1.2f)
+                                    .height(48.dp),
+                                placeholder = { Text("Enter city", fontSize = 14.sp) },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.Search,
@@ -202,20 +194,25 @@ fun HomePage(
                                     )
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White.copy(alpha = 0.9f),
-                                    unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    disabledContainerColor = Color.White,
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
-                                    focusedTextColor = TextPrimary,
-                                    unfocusedTextColor = TextPrimary
+                                    disabledIndicatorColor = Color.Transparent,
+                                    cursorColor = PinPointPrimary
                                 ),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 singleLine = true
                             )
 
+                            Spacer(modifier = Modifier.width(8.dp))
+
                             // State Dropdown
                             Box(
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
                             ) {
                                 ExposedDropdownMenuBox(
                                     expanded = stateExpanded,
@@ -225,22 +222,25 @@ fun HomePage(
                                         value = selectedState,
                                         onValueChange = {},
                                         readOnly = true,
-                                        label = { Text("State", fontSize = 12.sp) },
+                                        placeholder = { Text("State", fontSize = 12.sp) },
                                         trailingIcon = {
-                                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded)
+                                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                                expanded = stateExpanded
+                                            )
                                         },
                                         colors = TextFieldDefaults.colors(
-                                            focusedContainerColor = Color.White.copy(alpha = 0.9f),
-                                            unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                                            focusedContainerColor = Color.White,
+                                            unfocusedContainerColor = Color.White,
+                                            disabledContainerColor = Color.White,
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
-                                            focusedTextColor = TextPrimary,
-                                            unfocusedTextColor = TextPrimary
+                                            disabledIndicatorColor = Color.Transparent,
+                                            cursorColor = PinPointPrimary
                                         ),
                                         modifier = Modifier
                                             .menuAnchor()
                                             .fillMaxWidth(),
-                                        shape = RoundedCornerShape(8.dp),
+                                        shape = RoundedCornerShape(12.dp),
                                         singleLine = true
                                     )
 
@@ -254,7 +254,6 @@ fun HomePage(
                                                 onClick = {
                                                     selectedState = state
                                                     stateExpanded = false
-                                                    viewModel.filterByLocation(cityInput, state)
                                                 }
                                             )
                                         }
@@ -262,25 +261,52 @@ fun HomePage(
                                 }
                             }
 
-                            // Search button to apply city filter
-                            IconButton(
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            // Search button to apply filter
+                            FilledIconButton(
                                 onClick = {
-                                    viewModel.filterByLocation(cityInput, selectedState)
+                                    isNearbyMode = false
+                                    if (cityInput.isNotBlank()) {
+                                        viewModel.filterByLocation(cityInput, selectedState)
+                                    } else {
+                                        viewModel.filterByLocation("", selectedState)
+                                    }
                                 },
-                                modifier = Modifier
-                                    .background(
-                                        Color.White.copy(alpha = 0.9f),
-                                        RoundedCornerShape(8.dp)
-                                    )
+                                modifier = Modifier.size(48.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = PinPointPrimary,
+                                    contentColor = Color.White
+                                )
                             ) {
                                 Icon(
-                                    Icons.Default.LocationOn,
-                                    contentDescription = "Search Location",
-                                    tint = PinPointPrimary
+                                    Icons.Default.Search,
+                                    contentDescription = "Search Location"
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            // Quick "Near Me" button
+                            FilledIconButton(
+                                onClick = {
+                                    isNearbyMode = true
+                                    viewModel.loadNearbyItems()
+                                },
+                                modifier = Modifier.size(48.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = PinPointPrimary,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.MyLocation,
+                                    contentDescription = "Show items near me"
                                 )
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         ) { paddingValues ->
@@ -290,6 +316,43 @@ fun HomePage(
                     .padding(paddingValues)
                     .background(PinPointSurface)
             ) {
+                // Show current filter info
+                if (isNearbyMode || cityInput.isNotBlank() || selectedState != "Wisconsin") {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = PinPointPrimary.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = when {
+                                    isNearbyMode -> "Showing items near you"
+                                    cityInput.isNotBlank() -> "Showing items in $cityInput, $selectedState"
+                                    else -> "Showing items in $selectedState"
+                                },
+                                fontSize = 14.sp,
+                                color = TextPrimary
+                            )
+                            TextButton(
+                                onClick = {
+                                    isNearbyMode = false
+                                    cityInput = ""
+                                    selectedState = "Wisconsin"
+                                    viewModel.refresh()
+                                }
+                            ) {
+                                Text("Clear", fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+
                 Text(
                     "Recently Lost Items:",
                     modifier = Modifier.padding(16.dp),
@@ -329,7 +392,6 @@ fun HomePage(
 
                 // Show items list
                 if (!isLoading && error == null) {
-                    val visibleItems = items.filter { !it.status.equals("found", ignoreCase = true) }
                     if (items.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -344,12 +406,21 @@ fun HomePage(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    "No items found in this location",
+                                    text = when {
+                                        isNearbyMode -> "No items found near you"
+                                        cityInput.isNotBlank() -> "No items found in $cityInput, $selectedState"
+                                        else -> "No items found in $selectedState"
+                                    },
                                     color = Color.Gray,
                                     fontSize = 16.sp
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                TextButton(onClick = { viewModel.refresh() }) {
+                                TextButton(onClick = {
+                                    isNearbyMode = false
+                                    cityInput = ""
+                                    selectedState = "Wisconsin"
+                                    viewModel.refresh()
+                                }) {
                                     Text("View all items")
                                 }
                             }
@@ -360,11 +431,10 @@ fun HomePage(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(visibleItems) { item ->
+                            items(items) { item ->
                                 LostItemCard(item, onClick = { onNavigateToItem(item.id) })
                             }
                         }
-
                     }
                 }
             }
@@ -436,12 +506,12 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Fallback icon if no image
                     Icon(
                         Icons.Default.ShoppingCart,
                         contentDescription = "Lost Item",
                         modifier = Modifier.size(48.dp),
                         tint = TextPrimary
+
                     )
                 }
             }

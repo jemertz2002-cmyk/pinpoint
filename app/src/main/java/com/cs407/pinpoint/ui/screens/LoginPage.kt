@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -22,8 +21,10 @@ import com.cs407.pinpoint.ui.theme.PinPointPrimary
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.firestore
 
 /**
  * Login page composable that handles user authentication.
@@ -43,6 +44,7 @@ fun LoginPage(
     onBack: () -> Unit = {}
 ) {
     val auth = FirebaseAuth.getInstance()
+    val firestore = Firebase.firestore
     val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
@@ -84,9 +86,37 @@ fun LoginPage(
 
                 isLoading = true
                 auth.signInWithCredential(credential)
-                    .addOnSuccessListener {
-                        isLoading = false
-                        onSuccess()
+                    .addOnSuccessListener { authResult ->
+                        val user = authResult.user
+                        if (user != null) {
+                            // Check if user document exists and is active in Firestore
+                            firestore.collection("users")
+                                .document(user.uid)
+                                .get()
+                                .addOnSuccessListener { document ->
+                                    if (document.exists() && document.getBoolean("isActive") == true) {
+                                        // User exists and is active
+                                        isLoading = false
+                                        onSuccess()
+                                    } else {
+                                        // User doesn't exist or was deleted
+                                        isLoading = false
+                                        error = "Account not found. Please sign up first."
+                                        // Delete the Firebase auth account
+                                        user.delete()
+                                        googleSignInClient.signOut()
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    isLoading = false
+                                    error = "Failed to verify account: ${e.message}"
+                                    user.delete()
+                                    googleSignInClient.signOut()
+                                }
+                        } else {
+                            isLoading = false
+                            error = "Failed to get user information"
+                        }
                     }
                     .addOnFailureListener { e ->
                         isLoading = false
@@ -96,6 +126,8 @@ fun LoginPage(
                 isLoading = false
                 error = "Google Sign-In failed: ${e.message}"
             }
+        } else {
+            isLoading = false
         }
     }
 
@@ -127,8 +159,11 @@ fun LoginPage(
             // Google Sign-In Button
             OutlinedButton(
                 onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    googleSignInLauncher.launch(signInIntent)
+                    // Sign out first to force account picker
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading,
