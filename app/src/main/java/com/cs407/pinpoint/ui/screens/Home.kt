@@ -40,18 +40,15 @@ fun HomePage(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Collect data from ViewModel
     val items by viewModel.items.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    // Location states
     var cityInput by remember { mutableStateOf("") }
     var selectedState by remember { mutableStateOf("Wisconsin") }
     var stateExpanded by remember { mutableStateOf(false) }
     var isNearbyMode by remember { mutableStateOf(false) }
 
-    // US States list
     val states = listOf(
         "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
         "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
@@ -167,7 +164,7 @@ fun HomePage(
                         }
                     }
 
-                    // Location selection: City text field + State dropdown + buttons
+                    // Location selection bar
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = PinPointSecondary
@@ -184,8 +181,8 @@ fun HomePage(
                                 onValueChange = { cityInput = it },
                                 modifier = Modifier
                                     .weight(1.2f)
-                                    .height(48.dp),
-                                placeholder = { Text("Enter city", fontSize = 14.sp) },
+                                    .height(56.dp),
+                                placeholder = { Text("Enter city", fontSize = 13.sp) },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.Search,
@@ -212,7 +209,7 @@ fun HomePage(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(48.dp)
+                                    .height(56.dp)
                             ) {
                                 ExposedDropdownMenuBox(
                                     expanded = stateExpanded,
@@ -222,7 +219,7 @@ fun HomePage(
                                         value = selectedState,
                                         onValueChange = {},
                                         readOnly = true,
-                                        placeholder = { Text("State", fontSize = 12.sp) },
+                                        placeholder = { Text("State", fontSize = 13.sp) },
                                         trailingIcon = {
                                             ExposedDropdownMenuDefaults.TrailingIcon(
                                                 expanded = stateExpanded
@@ -263,7 +260,7 @@ fun HomePage(
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            // Search button to apply filter
+                            // Search button
                             FilledIconButton(
                                 onClick = {
                                     isNearbyMode = false
@@ -287,7 +284,7 @@ fun HomePage(
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            // Quick "Near Me" button
+                            // Near Me button
                             FilledIconButton(
                                 onClick = {
                                     isNearbyMode = true
@@ -316,7 +313,7 @@ fun HomePage(
                     .padding(paddingValues)
                     .background(PinPointSurface)
             ) {
-                // Show current filter info
+                // Filter info
                 if (isNearbyMode || cityInput.isNotBlank() || selectedState != "Wisconsin") {
                     Surface(
                         modifier = Modifier
@@ -361,7 +358,6 @@ fun HomePage(
                     color = TextPrimary
                 )
 
-                // Show loading indicator
                 if (isLoading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -371,7 +367,6 @@ fun HomePage(
                     }
                 }
 
-                // Show error message
                 error?.let { errorMessage ->
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -390,7 +385,6 @@ fun HomePage(
                     }
                 }
 
-                // Show items list
                 if (!isLoading && error == null) {
                     if (items.isEmpty()) {
                         Box(
@@ -488,7 +482,6 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                 )
             }
 
-            // Image display
             Box(
                 modifier = Modifier
                     .width(100.dp)
@@ -511,7 +504,6 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                         contentDescription = "Lost Item",
                         modifier = Modifier.size(48.dp),
                         tint = TextPrimary
-
                     )
                 }
             }
