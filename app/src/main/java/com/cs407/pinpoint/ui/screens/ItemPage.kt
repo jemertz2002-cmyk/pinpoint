@@ -58,8 +58,14 @@ import com.google.maps.android.compose.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import coil.compose.AsyncImage
 
 /**
@@ -79,6 +85,7 @@ fun ItemPage(
     val item by viewModel.item.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    var showLocationDialog by remember { mutableStateOf(false) }
 
     // Load item when composable is first created
     LaunchedEffect(itemId) {
@@ -107,6 +114,7 @@ fun ItemPage(
                 )
             )
         },
+        modifier = Modifier.fillMaxSize(),
         content = { padding ->
             when {
                 isLoading -> {
@@ -138,13 +146,13 @@ fun ItemPage(
                     Column(
                         modifier = Modifier
                             .padding(padding)
-                            .background(PinPointBackground),
+                            .background(PinPointBackground)
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        ItemCard(
-                            item = item!!
-                        )
+                        ItemCard(item = item!!)
                     }
                 }
             }
@@ -164,10 +172,11 @@ fun ItemCard(
     modifier: Modifier = Modifier,
     item: com.cs407.pinpoint.domain.models.LostItem
 ) {
+    var showLocationDialog by remember { mutableStateOf(false) }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .fillMaxWidth()
             .wrapContentHeight()
             .padding(16.dp)
     ) {
@@ -278,40 +287,67 @@ fun ItemCard(
                         color = TextPrimary
                     )
                 }
-            }
 
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 16.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-
-                // Google Map showing where the item was found
-                val itemLocation = remember { 
-                    LatLng(
-                        if (item.latitude != 0.0) item.latitude else 43.0731,
-                        if (item.longitude != 0.0) item.longitude else -89.4012
-                    )
-                }
-
-                val cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(itemLocation, 15f)
-                }
-                
-                Text(
-                    "Location: ${item.location}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 8.dp),
-                    color = TextPrimary
-                )
-                Box(
+                Button(
+                    onClick = { showLocationDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
+                        .padding(top = 8.dp, bottom = 8.dp)
                         .fillMaxWidth()
-                        .heightIn(min = 300.dp)
-                        .clip(RoundedCornerShape(8.dp))
                 ) {
+                    Text("Show Location")
+                }
+
+                if (showLocationDialog) {
+                    ItemLocationDialog(item, { showLocationDialog = false })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ItemLocationDialog(
+    item: com.cs407.pinpoint.domain.models.LostItem,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Item Location") },
+        text = {
+            Box(
+                modifier = Modifier
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 16.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    val itemLocation = remember {
+                        LatLng(
+                            if (item.latitude != 0.0) item.latitude else 43.0731,
+                            if (item.longitude != 0.0) item.longitude else -89.4012
+                        )
+                    }
+
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(itemLocation, 15f)
+                    }
+
+                    Text(
+                        "Location: ${item.location}",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 8.dp),
+                        color = TextPrimary
+                    )
+
                     GoogleMap(
-                        modifier = Modifier.matchParentSize(),
+                        modifier = Modifier.fillMaxSize(),
                         cameraPositionState = cameraPositionState,
                         uiSettings = MapUiSettings(
                             zoomControlsEnabled = true,
@@ -329,6 +365,12 @@ fun ItemCard(
                     }
                 }
             }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Button(onClick = onDismissRequest) {
+                Text("Back")
+            }
         }
-    }
+    )
 }
