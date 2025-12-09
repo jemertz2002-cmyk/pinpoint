@@ -511,6 +511,7 @@ fun LostItemCard(item: LostItem, onClick: () -> Unit) {
                         contentDescription = "Lost Item",
                         modifier = Modifier.size(48.dp),
                         tint = TextPrimary
+
                     )
                 }
             }
